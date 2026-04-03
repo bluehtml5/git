@@ -1,0 +1,196 @@
+# 恒生指數期貨每日分析報告
+
+**日期**: {{ r.report_date.strftime('%Y年%m月%d日') }}（{{ r.report_date.strftime('%A') }}）
+
+---
+
+## 一、期指開市價格
+
+**{{ r.report_date.strftime('%m月') }}期之 AO  大期 {{ r.snapshot.ao_big | hk }}，細期 {{ r.snapshot.ao_mini | hk }}**
+
+| 項目 | 價格 |
+|------|-----:|
+| 日高 DH | {{ r.snapshot.dh | hk }} |
+| 日低 DL | {{ r.snapshot.dl | hk }} |
+| 月中 M | {{ r.snapshot.monthly_mid | hk }} |
+| 上軌 | {{ r.snapshot.upper_band | hk }} |
+| 下軌 | {{ r.snapshot.lower_band | hk }} |
+| 現貨收市 | {{ r.snapshot.spot_close | hk }} |
+| 期現基差 | {{ r.snapshot.basis | pts }}點 |
+
+**框架: {{ r.snapshot.lower_band | hk }} — {{ r.snapshot.upper_band | hk }}**
+
+---
+
+## 二、期指淨倉變化
+
+> ⚠️ OI數據為前交易日 (T+1發佈)
+
+| 項目 | 數值 |
+|------|-----:|
+| 淨倉位 | {{ r.oi_record.net_position | int }}張 |
+| 本日變化 | {{ r.oi_record.oi_change | int }}張 |
+
+**解讀**: {{ r.oi_record.interpretation }}
+
+---
+
+## 三、外圍因素分析
+
+| 指標 | 數值 |
+|------|-----:|
+| VIX | {{ "%.1f" | format(r.snapshot.vix) }} |
+| A50期指 | {{ r.snapshot.a50_change_pct | pct }} |
+| 恒科指數 | {{ r.snapshot.hstech_change_pct | pct }} |
+
+{% for factor in r.external_factors %}
+• {{ factor }}
+{% endfor %}
+
+---
+
+## 四、技術指標分析
+
+### 多時間框架概覽
+
+| 指標 | 日線 | 4小時 | 1小時 |
+|------|-----:|------:|------:|
+| 趨勢 | {{ r.signals_1d.trend | trend_zh }} | {{ r.signals_4h.trend | trend_zh }} | {{ r.signals_1h.trend | trend_zh }} |
+| 結構 | {{ r.signals_1d.structure }} | {{ r.signals_4h.structure }} | {{ r.signals_1h.structure }} |
+| MACD Hist | {{ "%.0f" | format(r.signals_1d.macd_hist) }} | {{ "%.0f" | format(r.signals_4h.macd_hist) }} | {{ "%.0f" | format(r.signals_1h.macd_hist) }} |
+| RSI | {{ "%.1f" | format(r.signals_1d.rsi) }} | {{ "%.1f" | format(r.signals_4h.rsi) }} | {{ "%.1f" | format(r.signals_1h.rsi) }} |
+| KDJ-K | {{ "%.1f" | format(r.signals_1d.kdj_k) }} | {{ "%.1f" | format(r.signals_4h.kdj_k) }} | {{ "%.1f" | format(r.signals_1h.kdj_k) }} |
+| KDJ-D | {{ "%.1f" | format(r.signals_1d.kdj_d) }} | {{ "%.1f" | format(r.signals_4h.kdj_d) }} | {{ "%.1f" | format(r.signals_1h.kdj_d) }} |
+| KDJ-J | {{ "%.1f" | format(r.signals_1d.kdj_j) }} | {{ "%.1f" | format(r.signals_4h.kdj_j) }} | {{ "%.1f" | format(r.signals_1h.kdj_j) }} |
+| ATR | {{ "%.0f" | format(r.signals_1d.atr) }} | {{ "%.0f" | format(r.signals_4h.atr) }} | {{ "%.0f" | format(r.signals_1h.atr) }} |
+
+### 日線結構描述
+{{ r.signals_1d.structure | struct }}
+
+### 艾略特波浪（建議）
+{{ r.wave_context }}
+
+---
+
+## 五、關鍵支撐／阻力位
+
+| 價位 | 類型 | 強度 | 來源 | 過衝目標 |
+|-----:|------|:----:|------|--------:|
+{% for z in r.sr_zones %}
+| {{ z.price | hk }} | {{ "🟢 支撐" if z.zone_type == "support" else "🔴 阻力" }} | {{ "★" * z.strength }}{{ "☆" * (5 - z.strength) }} | {{ z.source }} | {{ z.overshoot_target | hk if z.overshoot_target else "—" }} |
+{% endfor %}
+
+**重要支持位**: {{ r.sr_zones | selectattr("zone_type", "equalto", "support") | list | sort(attribute="strength", reverse=True) | first | attr("price") | hk if r.sr_zones | selectattr("zone_type", "equalto", "support") | list else "—" }}
+
+---
+
+## 六、市場強度評估
+
+| 項目 | 狀態 |
+|------|------|
+| 整體強度 | **{{ r.market_strength.overall }}** |
+| 成交量能 | {{ r.market_strength.volume_signal }} |
+| 持倉變化 | {{ r.market_strength.oi_signal }} |
+| 期現基差 | {{ r.market_strength.basis_signal }} |
+| 波動率 | {{ r.market_strength.volatility_signal }} |
+
+### 多重確認信號清單
+
+| 確認項目 | 狀態 |
+|----------|:----:|
+| 趨勢方向一致性（日線/4H） | {{ "✅" if r.confirmation.trend_aligned else "❌" }} |
+| 接近關鍵位 | {{ "✅" if r.confirmation.key_level_broken else "❌" }} |
+| 成交量配合 | {{ "✅" if r.confirmation.volume_confirms else "❌" }} |
+| 時間週期共振 | {{ "✅" if r.confirmation.timeframe_resonance else "❌" }} |
+| 風險回報比合理 | {{ "✅" if r.confirmation.rr_acceptable else "❌" }} |
+
+**確認分數: {{ r.confirmation.score() }}/5**
+
+---
+
+## 七、明日市況三情景
+
+### 大膽假設：大戶操盤邏輯
+{% if r.signals_1d.trend == "bullish" %}
+大戶借好消息先向上推，低位睇
+{% elif r.signals_1d.trend == "bearish" %}
+大戶借壞消息先向下壓，高位睇
+{% else %}
+大戶借消息先製造假突破，再反向操作，區間高低位尋找機會
+{% endif %}
+
+{% for scenario in r.scenarios %}
+---
+
+### 情景 {{ scenario.rank }}：【{{ scenario.label }}】{% if scenario.rank == 1 %} ← 機率最大{% endif %}
+
+**觸發條件**: {{ scenario.trigger_condition }}
+
+**目標價位**: {{ scenario.price_target | hk }}  ｜  **關鍵位**: {{ scenario.key_level | hk }}
+
+#### 交易建議
+
+{% set ts = scenario.trade_setup %}
+{% if ts.direction == "long" %}
+🟢 **Set {{ ts.entry_price | hk }} 揸**，定 {{ ts.stop_points }} 點止蝕（{{ ts.stop_loss | hk }}），{{ ts.target_points }} 點食糊（{{ ts.target_1 | hk }}）
+{% else %}
+🔴 **Set {{ ts.entry_price | hk }} 沽**，定 {{ ts.stop_points }} 點止蝕（{{ ts.stop_loss | hk }}），{{ ts.target_points }} 點食糊（{{ ts.target_1 | hk }}）
+{% endif %}
+
+- 目標1: {{ ts.target_1 | hk }}  ｜  目標2: {{ ts.target_2 | hk }}
+- 風險回報比: 1:{{ "%.1f" | format(ts.risk_reward) }}
+- 建議倉位: 大期 {{ ts.position_size_big }} 張 ／ 細期 {{ ts.position_size_mini }} 張
+
+{{ scenario.rationale }}
+
+{% endfor %}
+
+---
+
+## 八、應變預案
+
+| 預案 | 情境 | 操作 |
+|------|------|------|
+{% for scenario in r.scenarios %}
+| Plan {{ ["A", "B", "C"][loop.index0] }} | {{ scenario.label }}：{{ scenario.trigger_condition[:40] }}… | {{ scenario.trade_setup.direction | replace("long","做多") | replace("short","做空") }} @ {{ scenario.trade_setup.entry_price | hk }} |
+{% endfor %}
+
+---
+
+## 九、風險管理狀態
+
+| 項目 | 數值 |
+|------|-----:|
+| 連續虧損次數 | {{ r.risk_state.consecutive_losses }} |
+| 倉位係數 | {{ "%.0f" | format(r.risk_state.risk_coefficient * 100) }}% |
+| 最大回撤 (近期) | {{ "%.1f" | format(r.risk_state.max_drawdown_pct) }}% |
+| 近期勝率 | {{ "%.1f" | format(r.risk_state.recent_win_rate) }}% |
+| 近期交易數 | {{ r.risk_state.total_recent_trades }} |
+
+{% if r.risk_state.warning %}
+> {{ r.risk_state.warning }}
+{% endif %}
+
+---
+
+## 十、交易紀律提示
+
+> ✅ 一個策略 ｜ 固定規則 ｜ 每筆交易風險降到最低
+>
+> ✅ 0% 關注錢 ｜ 100% 關注規則
+>
+> ✅ 一旦養成自律，你就會變得無可阻擋
+
+---
+
+{% if r.data_notes %}
+## 數據備注
+
+{% for note in r.data_notes %}
+- {{ note }}
+{% endfor %}
+{% endif %}
+
+---
+*報告由 HSI Analysis System 自動生成 — 僅供參考，不構成投資建議*
+*生成時間: {{ r.report_date }}*
