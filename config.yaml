@@ -1,0 +1,42 @@
+general:
+  timezone: "Asia/Hong_Kong"
+  report_output_dir: "reports"
+  db_path: "data/hsi_analysis.db"
+  cache_dir: "data/cache"
+
+futures:
+  hsi_ticker: "^HSI"
+  hsi_futures_front: "HSI=F"
+  mini_futures_front: "MHI=F"
+  a50_ticker: "XU050=F"
+  hstech_ticker: "^HSTECH"
+  vix_ticker: "^VIX"
+  big_lot_multiplier: 50
+  mini_lot_multiplier: 10
+  tick_size: 1
+  monthly_mid_lookback_days: 22
+
+risk:
+  default_account_size: 1000000
+  max_risk_per_trade_pct: 1.0
+  max_daily_loss_pct: 3.0
+  consecutive_loss_limit: 3
+  risk_coefficient_reduction: 0.5
+  min_risk_reward: 2.0
+
+technical:
+  fibonacci_levels: [0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618]
+  framework_band_atr_multiplier: 1.5
+  overshoot_extension: 0.272
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+  rsi_period: 14
+  kdj_period: 9
+  atr_period: 14
+  swing_order: 5
+  sr_cluster_tolerance: 0.005
+
+scheduler:
+  pre_market_time: "08:30"
+  post_market_time: "16:30"

@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.env
+
+# Generated data and reports (large files)
+data/hsi_analysis.db
+data/cache/
+reports/
+
+# IDE
+.vscode/
+.idea/
