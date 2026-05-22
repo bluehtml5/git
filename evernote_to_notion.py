@@ -39,6 +39,15 @@ except ImportError:
     print("缺少依賴套件，請執行:\n  pip install -r requirements.txt")
     sys.exit(1)
 
+# 自動載入 .env 檔案（若存在）
+_env_file = Path(__file__).parent / ".env"
+if _env_file.exists():
+    for _line in _env_file.read_text().splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _, _v = _line.partition("=")
+            os.environ.setdefault(_k.strip(), _v.strip())
+
 MAX_TEXT_LEN = 2000   # Notion rich text 單一元素長度限制
 RATE_DELAY = 0.35     # ~3 req/s，低於 Notion API 限制
 
@@ -446,7 +455,8 @@ def main() -> None:
         epilog=__doc__,
     )
     parser.add_argument("--enex", required=True, help=".enex 檔案路徑")
-    parser.add_argument("--token", required=True, help="Notion Integration Token")
+    parser.add_argument("--token", default=os.environ.get("NOTION_TOKEN"),
+                        help="Notion Integration Token（或設定環境變數 NOTION_TOKEN）")
 
     dest = parser.add_mutually_exclusive_group(required=True)
     dest.add_argument("--database", help="目標 Notion Database ID")
@@ -458,6 +468,8 @@ def main() -> None:
                         help="儲存圖片的目錄（預設: images）")
 
     args = parser.parse_args()
+    if not args.token:
+        parser.error("請提供 Notion Token：--token 參數，或在 .env 檔案設定 NOTION_TOKEN=...")
     run(args)
 
 

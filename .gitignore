@@ -1,0 +1,12 @@
+# 機密設定 — 絕對不要 commit 到 git
+.env
+
+# 匯出的圖片
+images/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
