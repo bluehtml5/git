@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026中小企業數字化支援服務 — 電子化方案</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background: #f5f7fa; color: #2d3748; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #3182ce 100%);
+    color: white;
+    padding: 60px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 999px;
+    padding: 6px 20px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  .hero h1 { font-size: clamp(26px, 5vw, 48px); font-weight: 900; line-height: 1.2; margin-bottom: 16px; }
+  .hero h1 span { color: #fbd38d; }
+  .hero p { font-size: clamp(14px, 2vw, 18px); opacity: 0.9; max-width: 600px; margin: 0 auto 30px; line-height: 1.7; }
+  .hero-amount {
+    display: inline-block;
+    background: linear-gradient(135deg, #f6ad55, #ed8936);
+    color: white;
+    font-size: clamp(28px, 6vw, 56px);
+    font-weight: 900;
+    padding: 16px 40px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(237,137,54,0.4);
+    margin-bottom: 12px;
+  }
+  .hero-amount small { font-size: 40%; vertical-align: middle; }
+  .hero-sub { font-size: 14px; opacity: 0.8; }
+
+  /* Section */
+  section { padding: 60px 20px; max-width: 1100px; margin: 0 auto; }
+  .section-title { text-align: center; margin-bottom: 40px; }
+  .section-title h2 { font-size: clamp(22px, 4vw, 34px); font-weight: 800; color: #1a365d; margin-bottom: 10px; }
+  .section-title p { color: #718096; font-size: 15px; }
+  .accent { color: #3182ce; }
+
+  /* Cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    transition: transform .2s, box-shadow .2s;
+    border-top: 4px solid transparent;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+  .card.blue  { border-top-color: #3182ce; }
+  .card.green { border-top-color: #38a169; }
+  .card.orange{ border-top-color: #ed8936; }
+  .card.purple{ border-top-color: #805ad5; }
+  .card-icon { font-size: 40px; margin-bottom: 16px; }
+  .card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #1a365d; }
+  .card p { font-size: 14px; color: #718096; line-height: 1.7; }
+
+  /* Steps */
+  .steps { display: flex; flex-wrap: wrap; gap: 0; }
+  .step {
+    flex: 1 1 160px;
+    text-align: center;
+    padding: 20px 12px;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -10px; top: 28px;
+    font-size: 22px;
+    color: #3182ce;
+  }
+  .step-num {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #2b6cb0, #3182ce);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 12px rgba(49,130,206,0.35);
+  }
+  .step p { font-size: 13px; color: #4a5568; line-height: 1.5; }
+
+  /* Timeline */
+  .timeline { border-left: 3px solid #3182ce; padding-left: 28px; margin-left: 20px; }
+  .tl-item { position: relative; margin-bottom: 28px; }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -37px; top: 6px;
+    width: 14px; height: 14px;
+    background: #3182ce;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #3182ce;
+  }
+  .tl-item .date { font-size: 12px; color: #3182ce; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
+  .tl-item h4 { font-size: 15px; font-weight: 700; color: #1a365d; margin-bottom: 4px; }
+  .tl-item p { font-size: 13px; color: #718096; }
+
+  /* Highlight box */
+  .highlight {
+    background: linear-gradient(135deg, #ebf8ff, #e9f5ff);
+    border: 1px solid #bee3f8;
+    border-radius: 16px;
+    padding: 32px;
+    margin: 40px 0;
+  }
+  .highlight h3 { color: #2b6cb0; font-size: 18px; margin-bottom: 16px; }
+  .highlight ul { list-style: none; }
+  .highlight ul li { padding: 8px 0; border-bottom: 1px dashed #bee3f8; font-size: 14px; color: #2d3748; }
+  .highlight ul li:last-child { border-bottom: none; }
+  .highlight ul li::before { content: '✅ '; }
+
+  /* CTA */
+  .cta-bar {
+    background: linear-gradient(135deg, #1a365d, #2b6cb0);
+    color: white;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .cta-bar h2 { font-size: clamp(22px, 4vw, 36px); font-weight: 800; margin-bottom: 14px; }
+  .cta-bar p { font-size: 15px; opacity: 0.85; margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #f6ad55, #ed8936);
+    color: white;
+    padding: 16px 40px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 24px rgba(237,137,54,0.4);
+    letter-spacing: 1px;
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    background: #ebf8ff;
+    color: #2b6cb0;
+    border: 1px solid #bee3f8;
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 4px;
+  }
+
+  /* Banner strip */
+  .strip {
+    background: #fef3c7;
+    border-top: 2px solid #f6ad55;
+    border-bottom: 2px solid #f6ad55;
+    padding: 14px 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #744210;
+  }
+
+  /* Grid 2col */
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; align-items: start; }
+
+  /* Footer */
+  footer {
+    background: #1a202c;
+    color: #a0aec0;
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 600px) {
+    .step:not(:last-child)::after { display: none; }
+    .step { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🏆 政府認可合資格供應商</div>
+  <h1>立即把握<span>最高</span><br>數字化補貼機遇</h1>
+  <p>配合「2026中小企業數字化支援服務」計劃，<br>我司提供一站式電子化方案，助您輕鬆申請、順利安裝</p>
+  <div class="hero-amount"><small>每企業最高資助</small> MOP 18,000 <small>元</small></div><br>
+  <div class="hero-sub">📅 第一期申請期：2026年6月8日 至 6月26日 ｜ 名額 1,000 個</div>
+</div>
+
+<div class="strip">
+  ⚡ 名額有限！第一期僅設 1,000 個名額，先到先得 — 立即聯絡我司了解方案詳情
+</div>
+
+<!-- WHY US -->
+<section>
+  <div class="section-title">
+    <h2>為何選擇 <span class="accent">我司電子化方案</span>？</h2>
+    <p>專業團隊全程跟進，讓您安心申請、順利安裝、完整結算</p>
+  </div>
+  <div class="cards">
+    <div class="card blue">
+      <div class="card-icon">🏛️</div>
+      <h3>政府認可供應商</h3>
+      <p>我司為計劃合資格供應商，方案符合執行單位要求，文件齊全規範，結算無憂。</p>
+    </div>
+    <div class="card green">
+      <div class="card-icon">📋</div>
+      <h3>一站式文件協助</h3>
+      <p>報價單、授權書、承諾書由我司統一協助準備，確保格式正確，避免退件。</p>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">⚡</div>
+      <h3>快速安裝交付</h3>
+      <p>通知書發出後45天安裝期內，我司快速部署，確保在期限內完成所有安裝。</p>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🎓</div>
+      <h3>培訓支援到位</h3>
+      <p>提供完整員工培訓，培訓記錄文件齊備，符合結算所需培訓記錄要求。</p>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTIONS -->
+<section style="background: white; max-width: 100%; padding: 60px 20px;">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div class="section-title">
+      <h2>我司 <span class="accent">電子化方案</span> 一覽</h2>
+      <p>涵蓋多種數字化轉型需要，適合不同行業中小企業</p>
+    </div>
+    <div class="cards">
+      <div class="card blue">
+        <div class="card-icon">🖥️</div>
+        <h3>POS 銷售管理系統</h3>
+        <p>智能收銀、庫存管理、銷售報表一體化，提升前台效率，實時掌握營業數據。</p>
+        <br>
+        <div>
+          <span class="tag">零售</span>
+          <span class="tag">餐飲</span>
+          <span class="tag">服務業</span>
+        </div>
+      </div>
+      <div class="card green">
+        <div class="card-icon">🌐</div>
+        <h3>網絡宣傳 / 電商方案</h3>
+        <p>企業網站建設、社交媒體管理、線上商城，全面拓展數字營銷渠道。</p>
+        <br>
+        <div>
+          <span class="tag">各行業適用</span>
+          <span class="tag">電商</span>
+        </div>
+      </div>
+      <div class="card orange">
+        <div class="card-icon">💳</div>
+        <h3>線上支付整合</h3>
+        <p>對接澳門主流支付平台，支援線上結帳，符合計劃對支付功能的特定要求。</p>
+        <br>
+        <div>
+          <span class="tag">餐飲</span>
+          <span class="tag">零售</span>
+          <span class="tag">堂食</span>
+        </div>
+      </div>
+      <div class="card purple">
+        <div class="card-icon">⚙️</div>
+        <h3>後台營運管理系統</h3>
+        <p>人事、考勤、排班、進銷存數字化管理，降低人手成本，提升管理效率。</p>
+        <br>
+        <div>
+          <span class="tag">各行業</span>
+          <span class="tag">中小企</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section>
+  <div class="section-title">
+    <h2>申請流程 <span class="accent">簡單清晰</span></h2>
+    <p>我司全程協助，從申請到結算一手包辦</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <strong>聯絡我司</strong>
+      <p>了解方案，確認需求</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <strong>企業報名</strong>
+      <p>6/8–6/26 網上申請計劃</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <strong>完成培訓</strong>
+      <p>3小時數字化培訓課程</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <strong>企業診斷</strong>
+      <p>評估數字化改革方案</p>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <strong>選擇方案</strong>
+      <p>我司提交報價文件</p>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <strong>安裝完成</strong>
+      <p>45天內完成部署培訓</p>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <strong>完成結算</strong>
+      <p>資助直接撥付供應商</p>
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section style="background: white; max-width: 100%; padding: 60px 20px;">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div class="grid2">
+      <div>
+        <div class="section-title" style="text-align:left;">
+          <h2>第一期<span class="accent">重要時間表</span></h2>
+          <p>把握每個關鍵節點，不錯過任何機會</p>
+        </div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="date">2026年6月8日 — 6月26日</div>
+            <h4>📝 企業申請期</h4>
+            <p>網上提交申請，名額1,000個，先到先得</p>
+          </div>
+          <div class="tl-item">
+            <div class="date">2026年7月上旬</div>
+            <h4>🎯 公佈中籤名單</h4>
+            <p>抽籤後公佈，需補交資料</p>
+          </div>
+          <div class="tl-item">
+            <div class="date">2026年9月 — 10月</div>
+            <h4>🎓 數字化培訓課程</h4>
+            <p>完成3小時數字化營運認知培訓</p>
+          </div>
+          <div class="tl-item">
+            <div class="date">2026年10月 — 12月</div>
+            <h4>🤝 選擇供應商 / 提交報價</h4>
+            <p>完成診斷後選擇我司方案，提交報價文件</p>
+          </div>
+          <div class="tl-item">
+            <div class="date">2026年11月 — 2027年3月</div>
+            <h4>🔧 系統安裝期</h4>
+            <p>收到同意通知書後45天內完成安裝</p>
+          </div>
+          <div class="tl-item">
+            <div class="date">2027年1月 — 5月</div>
+            <h4>✅ 完成結算</h4>
+            <p>資助費用由中心直接向供應商支付</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="highlight">
+          <h3>🏅 申請資格要求（重點）</h3>
+          <ul>
+            <li>本澳依法成立之中小企業</li>
+            <li>已在財政局登記，員工不超過100人</li>
+            <li>企業在澳門境內有合法實體營運地點</li>
+            <li>已持有或正在申請消委會「誠信店」資格</li>
+            <li>派員（最多2名）參加3小時培訓課程</li>
+            <li>未曾獲2023–2025年同類計劃資助</li>
+          </ul>
+        </div>
+
+        <div class="highlight" style="background: linear-gradient(135deg, #f0fff4, #e6ffed); border-color: #9ae6b4;">
+          <h3 style="color:#276749;">💡 資助詳情</h3>
+          <ul style="">
+            <li style="border-color:#9ae6b4;">資助上限：澳門幣 <strong>18,000 元</strong></li>
+            <li style="border-color:#9ae6b4;">費用由執行單位直接向供應商支付</li>
+            <li style="border-color:#9ae6b4;">超出部分由企業自行承擔</li>
+            <li style="border-color:#9ae6b4;">同一納稅人最多3間企業可受惠</li>
+            <li style="border-color:#9ae6b4;">計劃分兩部分：培訓診斷 + 方案安裝</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPO -->
+<section>
+  <div class="section-title">
+    <h2>📍 <span class="accent">2026中小企業數字化方案體驗日</span></h2>
+    <p>歡迎親臨體驗，與我司團隊面對面交流</p>
+  </div>
+  <div class="cards" style="max-width:800px; margin:0 auto;">
+    <div class="card blue" style="text-align:center;">
+      <div class="card-icon">📅</div>
+      <h3>日期</h3>
+      <p style="font-size:18px; font-weight:700; color:#1a365d;">2026年6月16日（二）</p>
+    </div>
+    <div class="card green" style="text-align:center;">
+      <div class="card-icon">🕙</div>
+      <h3>時間</h3>
+      <p style="font-size:18px; font-weight:700; color:#1a365d;">10:00 — 18:00</p>
+    </div>
+    <div class="card orange" style="text-align:center;">
+      <div class="card-icon">📍</div>
+      <h3>地點</h3>
+      <p style="font-size:18px; font-weight:700; color:#1a365d;">澳門旅遊塔二樓</p>
+    </div>
+  </div>
+  <p style="text-align:center; margin-top:24px; color:#718096; font-size:14px;">
+    現場展示多款電子化方案，歡迎中小企業主親臨了解，與我司專業顧問即場諮詢
+  </p>
+</section>
+
+<!-- CTA -->
+<div class="cta-bar">
+  <h2>🚀 立即聯絡我司，搶佔名額！</h2>
+  <p>第一期申請期：2026年6月8日 至 6月26日<br>我司協助您完成全部申請流程，資助到手無憂</p>
+  <a href="#" class="btn">📞 立即查詢方案</a>
+  <p style="margin-top:20px; font-size:13px; opacity:0.7;">* 計劃由經濟及科技發展局主辦，澳門生產力暨科技轉移中心執行<br>申請詳情：https://www.cpttm.org.mo/SMEtech2026/</p>
+</div>
+
+<footer>
+  <p>本宣傳文案資料來源：2026中小企業數字化支援服務合資格供應商會議（2026-06-02）</p>
+  <p>計劃申請詳情以主辦單位及執行單位公佈為準</p>
+</footer>
+
+</body>
+</html>
