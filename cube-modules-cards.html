@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CUBE 六大模組宣傳卡 — 2026中小企業數字化支援服務</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --teal: #2bb3b8;
+    --teal-dark: #1d8a8f;
+    --yellow: #f5c518;
+    --yellow-soft: #fdf3cf;
+    --ink: #1f2a33;
+    --grey: #5a6b75;
+  }
+  body {
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    background: #e9eef0;
+    color: var(--ink);
+    padding: 30px 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-head {
+    max-width: 1080px; margin: 0 auto 30px; text-align: center;
+  }
+  .page-head h1 { font-size: 26px; color: var(--teal-dark); margin-bottom: 8px; }
+  .page-head p { color: var(--grey); font-size: 14px; }
+  .page-head .hint {
+    display:inline-block; margin-top:12px; background:#fff; border:1px dashed var(--teal);
+    color:var(--teal-dark); font-size:12px; padding:6px 16px; border-radius:999px;
+  }
+
+  .grid {
+    max-width: 1080px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: 28px;
+  }
+
+  /* CARD */
+  .card {
+    background: #fff;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(29,138,143,0.15);
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+
+  .card-top {
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+    color: #fff;
+    padding: 26px 26px 50px;
+    position: relative;
+  }
+  .card-top.alt { background: linear-gradient(135deg, #f5c518 0%, #e0a800 100%); }
+  .card-top.alt .num, .card-top.alt h2, .card-top.alt .emoji { color: var(--ink); }
+  .card-top.alt .num { background: rgba(31,42,51,0.15); }
+
+  .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; border-radius: 14px;
+    background: rgba(255,255,255,0.22);
+    font-size: 24px; font-weight: 900;
+    margin-bottom: 14px;
+  }
+  .emoji { font-size: 30px; float: right; opacity: 0.95; }
+  .card-top h2 { font-size: 26px; font-weight: 900; line-height: 1.25; }
+
+  .ribbon {
+    position: absolute; bottom: -1px; left: 0; right: 0; height: 32px;
+    background: #fff;
+    border-radius: 28px 28px 0 0;
+  }
+
+  .card-body { padding: 8px 26px 24px; flex: 1; display:flex; flex-direction:column; }
+
+  .lead { font-size: 14px; color: var(--grey); line-height: 1.75; margin-bottom: 18px; }
+
+  .pain {
+    background: var(--yellow-soft);
+    border-left: 4px solid var(--yellow);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px; color: #7a5a00; line-height: 1.6;
+    margin-bottom: 18px;
+  }
+  .pain b { color: #a06f00; }
+
+  .meta { margin-bottom: 8px; }
+  .meta .label {
+    display:inline-block; background: var(--teal); color:#fff;
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .meta.alt .label { background: var(--ink); }
+  .tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+  .tag {
+    background:#eef7f7; color: var(--teal-dark); border:1px solid #cfeaeb;
+    font-size:12px; font-weight:600; padding:4px 12px; border-radius:999px;
+  }
+  .tag.fn { background:#fff8e1; color:#8a6d00; border-color:#f3e0a0; }
+
+  .card-foot {
+    margin-top: auto;
+    background: var(--ink);
+    color:#fff;
+    padding: 16px 26px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap: 8px;
+  }
+  .perk { font-size: 13px; line-height:1.4; }
+  .perk b { color: var(--yellow); font-size:15px; }
+  .brand { text-align:right; font-size:12px; opacity:0.85; line-height:1.5; white-space:nowrap; }
+  .brand .logo { font-weight:900; font-size:16px; letter-spacing:1px; color:#fff; opacity:1; }
+
+  /* shared bottom banner inside each card foot */
+  @media print {
+    body { background:#fff; padding:0; }
+    .page-head { display:none; }
+    .grid { gap: 0; }
+    .card { page-break-inside: avoid; box-shadow:none; border:1px solid #ddd; margin-bottom: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>CUBE 六大模組 · 行業宣傳卡</h1>
+  <p>2026中小企業數字化支援服務 ｜ 最高資助 MOP 18,000 ｜ 15個月免費使用</p>
+  <span class="hint">💡 每張卡可單獨截圖／列印，針對不同行業客戶推送</span>
+</div>
+
+<div class="grid">
+
+  <!-- 1 收銀系統 -->
+  <div class="card">
+    <div class="card-top">
+      <span class="emoji">🖥️</span>
+      <div class="num">1</div>
+      <h2>收銀系統<br>POS</h2>
+      <div class="ribbon"></div>
+    </div>
+    <div class="card-body">
+      <p class="lead">同步管理線上線下訂單、會員及庫存資料，集中處理收銀與銷售數據，減少人手輸入與重覆流程，提升門市營運效率及資料準確性。</p>
+      <div class="pain"><b>解決痛點：</b>線上線下訂單分散、人手入錯數、庫存對不上、高峰期收銀慢。</div>
+      <div class="meta"><span class="label">適合使用</span><div class="tags">
+        <span class="tag">零售店</span><span class="tag">門市</span><span class="tag">連鎖小店</span>
+      </div></div>
+      <div class="meta alt"><span class="label">核心功能</span><div class="tags">
+        <span class="tag fn">線上線下整合</span><span class="tag fn">庫存管理</span>
+      </div></div>
+    </div>
+    <div class="card-foot">
+      <div class="perk"><b>MOP 18,000</b> 資助<br>＋ 15個月免費</div>
+      <div class="brand"><div class="logo">CUBE</div>+853 6881 6980<br>www.cube.mo</div>
+    </div>
+  </div>
+
+  <!-- 2 預約及報名系統 -->
+  <div class="card">
+    <div class="card-top alt">
+      <span class="emoji">📅</span>
+      <div class="num">2</div>
+      <h2>預約及<br>報名系統</h2>
+      <div class="ribbon"></div>
+    </div>
+    <div class="card-body">
+      <p class="lead">減少人手行政安排及電話查詢時間，提升預約流程效率與客戶體驗，同時方便企業集中管理預約及報名資料。</p>
+      <div class="pain"><b>解決痛點：</b>電話查詢佔用人手、爽約率高、名額難控制、報名資料分散。</div>
+      <div class="meta"><span class="label">適合使用</span><div class="tags">
+        <span class="tag">教育機構</span><span class="tag">美容院</span><span class="tag">活動機構</span>
+      </div></div>
+      <div class="meta alt"><span class="label">核心功能</span><div class="tags">
+        <span class="tag fn">時段預約</span><span class="tag fn">名額控制</span><span class="tag fn">自動通知</span>
+      </div></div>
+    </div>
+    <div class="card-foot">
+      <div class="perk"><b>MOP 18,000</b> 資助<br>＋ 15個月免費</div>
+      <div class="brand"><div class="logo">CUBE</div>+853 6881 6980<br>www.cube.mo</div>
+    </div>
+  </div>
+
+  <!-- 3 微信小程序 -->
+  <div class="card">
+    <div class="card-top">
+      <span class="emoji">💬</span>
+      <div class="num">3</div>
+      <h2>微信<br>小程序</h2>
+      <div class="ribbon"></div>
+    </div>
+    <div class="card-body">
+      <p class="lead">透過小程序提升流動銷售能力、增加品牌曝光，接觸更多內地客戶，建立更完整的微信營運模式。</p>
+      <div class="pain"><b>解決痛點：</b>難接觸內地遊客、品牌曝光不足、不懂註冊微信小程序。</div>
+      <div class="meta"><span class="label">適合使用</span><div class="tags">
+        <span class="tag">內地客生意</span><span class="tag">餐飲手信</span><span class="tag">微信生態用戶</span>
+      </div></div>
+      <div class="meta alt"><span class="label">核心功能</span><div class="tags">
+        <span class="tag fn">協助申請</span><span class="tag fn">統一後台管理</span>
+      </div></div>
+    </div>
+    <div class="card-foot">
+      <div class="perk"><b>MOP 18,000</b> 資助<br>＋ 15個月免費</div>
+      <div class="brand"><div class="logo">CUBE</div>+853 6881 6980<br>www.cube.mo</div>
+    </div>
+  </div>
+
+  <!-- 4 直播留言購買 -->
+  <div class="card">
+    <div class="card-top alt">
+      <span class="emoji">📹</span>
+      <div class="num">4</div>
+      <h2>直播<br>留言購買</h2>
+      <div class="ribbon"></div>
+    </div>
+    <div class="card-body">
+      <p class="lead">自動處理留言互動、商品回覆及訂單流程，協助企業提升社交媒體轉換率及數字化營運能力。</p>
+      <div class="pain"><b>解決痛點：</b>直播留言爆量、人手追單漏單、社交流量難變現。</div>
+      <div class="meta"><span class="label">適合使用</span><div class="tags">
+        <span class="tag">社交推廣</span><span class="tag">直播帶貨</span><span class="tag">網紅店</span>
+      </div></div>
+      <div class="meta alt"><span class="label">核心功能</span><div class="tags">
+        <span class="tag fn">留言自動回覆</span><span class="tag fn">引流至網店結帳</span>
+      </div></div>
+    </div>
+    <div class="card-foot">
+      <div class="perk"><b>MOP 18,000</b> 資助<br>＋ 15個月免費</div>
+      <div class="brand"><div class="logo">CUBE</div>+853 6881 6980<br>www.cube.mo</div>
+    </div>
+  </div>
+
+  <!-- 5 活動專頁結帳 -->
+  <div class="card">
+    <div class="card-top">
+      <span class="emoji">🎉</span>
+      <div class="num">5</div>
+      <h2>活動<br>專頁結帳</h2>
+      <div class="ribbon"></div>
+    </div>
+    <div class="card-body">
+      <p class="lead">支援子域名或獨立網域！可設定指定會員、可銷售商品及登入後顯示專屬內容或批發價格，所有資料均與主系統同步管理。</p>
+      <div class="pain"><b>解決痛點：</b>批發價需保密、活動短期上架、會員分級難管理。</div>
+      <div class="meta"><span class="label">適合使用</span><div class="tags">
+        <span class="tag">活動推廣</span><span class="tag">批發 B2B</span><span class="tag">內部銷售</span>
+      </div></div>
+      <div class="meta alt"><span class="label">核心功能</span><div class="tags">
+        <span class="tag fn">多域名活動店</span><span class="tag fn">會員專屬銷售系統</span>
+      </div></div>
+    </div>
+    <div class="card-foot">
+      <div class="perk"><b>MOP 18,000</b> 資助<br>＋ 15個月免費</div>
+      <div class="brand"><div class="logo">CUBE</div>+853 6881 6980<br>www.cube.mo</div>
+    </div>
+  </div>
+
+  <!-- 6 自助收銀機 -->
+  <div class="card">
+    <div class="card-top alt">
+      <span class="emoji">🛎️</span>
+      <div class="num">6</div>
+      <h2>自助<br>收銀機</h2>
+      <div class="ribbon"></div>
+    </div>
+    <div class="card-body">
+      <p class="lead">支援顧客自助下單及付款，減少排隊時間，提升門市營運效率及顧客體驗。</p>
+      <div class="pain"><b>解決痛點：</b>排隊時間長、人手不足、高峰期收銀瓶頸。</div>
+      <div class="meta"><span class="label">適合使用</span><div class="tags">
+        <span class="tag">門市零售</span><span class="tag">輕食店</span><span class="tag">快餐店</span>
+      </div></div>
+      <div class="meta alt"><span class="label">核心功能</span><div class="tags">
+        <span class="tag fn">自助下單付款</span><span class="tag fn">專用系統及設備</span>
+      </div></div>
+    </div>
+    <div class="card-foot">
+      <div class="perk"><b>MOP 18,000</b> 資助<br>＋ 15個月免費</div>
+      <div class="brand"><div class="logo">CUBE</div>+853 6881 6980<br>www.cube.mo</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
