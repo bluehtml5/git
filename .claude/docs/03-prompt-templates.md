@@ -59,7 +59,7 @@
 回報格式：先一段直接回答問題，再列證據。全文超過 40 行就寫到【scratchpad 或 .claude/docs/ 下的檔案路徑】，只回摘要＋路徑。
 ```
 
-## 5. 審查／驗收（subagent_type: verifier，model: 定義檔已設 sonnet/high；高風險改 opus）
+## 5. 審查／驗收（subagent_type: verifier，model: 定義檔已設 sonnet/high；命中 `02-judgment.md` 高風險清單的產出改派 opus）
 
 ```
 請驗收以下產出。你沒有參與製作，請只相信你親眼驗證到的。

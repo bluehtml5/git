@@ -29,7 +29,7 @@
 
 **具體修法**：
 1. **重試上限硬規則**：同一做法失敗 2 次 = 這條路關閉。第 3 次行動必須是以下之一：(a) 換一個本質不同的做法、(b) 升級模型重派（帶完整失敗軌跡，見 `01-delegation.md` 升降級路徑）、(c) 停下來把卡點報告給使用者。「本質不同」的判準：如果新嘗試失敗的理由會和上次一樣，就不算換路。
-2. **禁止 sleep 輪詢**：等 PR 事件用 `subscribe_pr_activity`；等時間到用 `send_later`（claude-code-remote MCP）。這些會把事件推回 session，不用燒 token 空等。
+2. **禁止 sleep 輪詢**：等 PR 事件用 `mcp__github__subscribe_pr_activity`；等時間到用 `mcp__Claude_Code_Remote__send_later`（注意兩者分屬不同 MCP server，別套錯前綴）。這些會把事件推回 session，不用燒 token 空等。
 3. **錯誤要先讀完再動手**：修錯前把錯誤訊息完整貼進自己的推理（不是掃一眼），確認修的是訊息裡指的那個問題，不是模式匹配到的「常見問題」。
 
 ## 誠實條款：這份診斷補不了的事
