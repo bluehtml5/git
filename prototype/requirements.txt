@@ -2,5 +2,6 @@ aiohttp>=3.9
 mss>=9.0
 Pillow>=10.0
 qrcode>=7.4
-# Linux 輸入注入用(其他平台可省略)
+# 輸入注入(把 iPad 觸控變成電腦滑鼠事件)
 python-xlib>=0.33; sys_platform == "linux"
+pyautogui>=0.9.54; sys_platform == "win32" or sys_platform == "darwin"

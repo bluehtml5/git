@@ -23,6 +23,7 @@ import io
 import json
 import os
 import socket
+import sys
 import time
 import zlib
 
@@ -48,6 +49,7 @@ class ScreenCapturer:
                 f"monitor {monitor_index} 不存在,共 {len(monitors) - 1} 個螢幕"
             )
         self.monitor = monitors[monitor_index]
+        self.primary = monitors[1]
         self.width = self.monitor["width"]
         self.height = self.monitor["height"]
         self._last_crc = None
@@ -76,7 +78,7 @@ class ScreenCapturer:
 # ---------------------------------------------------------------------------
 
 class X11Input:
-    """透過 XTest 擴充把觸控事件注入 X server。"""
+    """Linux:透過 XTest 擴充把觸控事件注入 X server。"""
 
     def __init__(self):
         from Xlib import display
@@ -87,12 +89,8 @@ class X11Input:
         if not self._display.has_extension("XTEST"):
             raise RuntimeError("X server 不支援 XTEST 擴充")
 
-    def inject(self, event: dict, screen_w: int, screen_h: int):
+    def pointer(self, kind: str, x: int, y: int):
         from Xlib import X
-
-        x = int(event["x"] * screen_w)
-        y = int(event["y"] * screen_h)
-        kind = event["event"]
 
         self._xtest.fake_input(self._display, X.MotionNotify, x=x, y=y)
         if kind == "down":
@@ -102,19 +100,53 @@ class X11Input:
         self._display.sync()
 
 
-class NullInput:
-    """沒有輸入後端時的替代品(僅記錄,不注入)。"""
+class PyAutoGUIInput:
+    """Windows / macOS:用 pyautogui 注入滑鼠事件。
 
-    def inject(self, event, screen_w, screen_h):
+    macOS Retina 螢幕上 mss 回報的是實體像素、pyautogui 用的是邏輯座標,
+    這裡以主螢幕的比例換算(macOS 需在系統設定授權「輔助使用」)。
+    """
+
+    def __init__(self, primary_monitor: dict):
+        import pyautogui
+
+        pyautogui.FAILSAFE = False
+        pyautogui.PAUSE = 0
+        self._gui = pyautogui
+        logical_w, logical_h = pyautogui.size()
+        self._scale_x = logical_w / primary_monitor["width"]
+        self._scale_y = logical_h / primary_monitor["height"]
+
+    def pointer(self, kind: str, x: int, y: int):
+        x = int(x * self._scale_x)
+        y = int(y * self._scale_y)
+        if kind == "down":
+            self._gui.mouseDown(x, y)
+        elif kind == "up":
+            self._gui.mouseUp(x, y)
+        else:
+            self._gui.moveTo(x, y)
+
+
+class NullInput:
+    """沒有輸入後端時的替代品(僅顯示畫面,不回傳觸控)。"""
+
+    def pointer(self, kind, x, y):
         pass
 
 
-def make_input_backend():
-    if os.environ.get("DISPLAY"):
+def make_input_backend(primary_monitor: dict):
+    if sys.platform.startswith("linux") and os.environ.get("DISPLAY"):
         try:
             return X11Input()
         except Exception as exc:  # noqa: BLE001
             print(f"[warn] XTest 輸入注入不可用:{exc}")
+    elif sys.platform in ("win32", "darwin"):
+        try:
+            return PyAutoGUIInput(primary_monitor)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[warn] pyautogui 輸入注入不可用(pip install pyautogui):{exc}")
+    print("[warn] 觸控回傳已停用,僅串流畫面")
     return NullInput()
 
 
@@ -127,7 +159,7 @@ class StreamServer:
         self.capturer = capturer
         self.fps = fps
         self.quality = quality
-        self.input_backend = make_input_backend()
+        self.input_backend = make_input_backend(capturer.primary)
         self.clients: set[web.WebSocketResponse] = set()
 
     async def broadcast_loop(self):
@@ -172,9 +204,11 @@ class StreamServer:
                     continue
                 data = json.loads(msg.data)
                 if data.get("type") == "pointer":
-                    self.input_backend.inject(
-                        data, self.capturer.width, self.capturer.height
-                    )
+                    # 正規化座標 → 該螢幕的絕對桌面座標(延伸桌面要加上螢幕偏移)
+                    mon = self.capturer.monitor
+                    x = mon["left"] + int(data["x"] * mon["width"])
+                    y = mon["top"] + int(data["y"] * mon["height"])
+                    self.input_backend.pointer(data["event"], x, y)
                 elif data.get("type") == "ping":
                     await ws.send_json({"type": "pong", "t": data.get("t")})
         finally:
