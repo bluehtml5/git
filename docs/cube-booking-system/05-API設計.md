@@ -1,0 +1,145 @@
+# 05. API 設計（RESTful）
+
+## 1. 通用約定
+
+- Base URL：`/api/v1`
+- 認證：JWT Bearer Token；商家端 Token 內含 `merchant_id` 與角色，後端強制注入租戶過濾
+- 三端路徑前綴：用戶端 `/app`、商家端 `/biz`、平台管理端 `/admin`
+- 分頁：`?page=1&size=20`，回傳 `{ data, total, page, size }`
+- 錯誤格式：`{ code: "BOOKING_SLOT_TAKEN", message: "...", details? }`
+- 冪等：建立預約、扣減等寫入 API 支援 `Idempotency-Key` header
+
+## 2. 用戶端 API（/app）
+
+### 認證與會員
+| Method | Path | 說明 |
+|---|---|---|
+| POST | /auth/otp/send | 發送手機驗證碼 |
+| POST | /auth/otp/verify | 驗證登入，回 JWT |
+| POST | /auth/line | LINE 登入 |
+| GET | /me | 個人資料 |
+| GET | /me/memberships | 我的各商家會員卡 |
+| GET | /me/wallets?merchant_id= | 我的資產（儲值/點數/堂數卡） |
+| GET | /me/wallets/:id/ledger | 扣減明細帳 |
+
+### 瀏覽與預約
+| Method | Path | 說明 |
+|---|---|---|
+| GET | /merchants/:slug | 商家頁 |
+| GET | /merchants/:slug/services | 預約項目列表 |
+| GET | /merchants/:slug/staffs?service_id= | 可服務人員 |
+| GET | /merchants/:slug/availability | **可預約時段**<br/>`?service_id=&date=&staff_id?=` |
+| POST | /bookings | 建立預約 `{service_id, staff_id?, start_at, price_option_id}` |
+| GET | /bookings?status=upcoming | 我的預約 |
+| GET | /bookings/:id | 預約詳情 |
+| POST | /bookings/:id/reschedule | 改期 `{new_start_at, staff_id?}` |
+| POST | /bookings/:id/cancel | 取消（回傳返還金額試算） |
+| POST | /bookings/:id/late-notice | 回報遲到 `{minutes}` |
+
+## 3. 商家端 API（/biz）
+
+### 設定
+| Method | Path | 說明 |
+|---|---|---|
+| GET/PUT | /merchant | 商家基本資料、營業時間 |
+| GET/PUT | /policies | 預約政策（全店） |
+| GET/POST/PUT/DELETE | /services | 預約項目 CRUD（含時長/buffer/扣減方式） |
+| PUT | /services/:id/policy | 項目覆寫政策 |
+| GET/POST/PUT/DELETE | /pass-products | 卡/方案商品 CRUD |
+| GET/POST/PUT/DELETE | /resources | 資源（房間/設備） |
+
+### 人員與排班
+| Method | Path | 說明 |
+|---|---|---|
+| GET/POST/PUT | /staffs | 員工管理與角色 |
+| PUT | /staffs/:id/services | 指派可提供項目 |
+| GET/PUT | /staffs/:id/shift-rules | 週期班表（工作時長） |
+| POST/DELETE | /staffs/:id/shift-exceptions | 請假/調班/加班 |
+| GET | /calendar?view=day&date=&staff_id?= | 行事曆聚合資料 |
+
+### 預約操作
+| Method | Path | 說明 |
+|---|---|---|
+| GET | /bookings?date=&staff_id=&status= | 預約查詢 |
+| POST | /bookings | 代客預約 |
+| POST | /bookings/:id/approve\|reject | 審核（審核制） |
+| POST | /bookings/:id/check-in | 報到 |
+| POST | /bookings/:id/reschedule | 商家改期（可越過期限限制，需原因） |
+| POST | /bookings/:id/cancel | 商家取消 |
+| POST | /bookings/:id/no-show | 標記爽約 |
+| POST | /bookings/:id/complete | 完成 |
+
+### 會員與扣減
+| Method | Path | 說明 |
+|---|---|---|
+| GET | /members?tag=&q= | 會員列表/搜尋 |
+| GET | /members/:id | 會員詳情（資產、預約史、爽約記錄） |
+| POST | /members/:id/wallets | 販售/贈送卡、儲值 |
+| POST | /wallets/:id/adjust | 手動調帳 `{change, note}`（留稽核） |
+
+### 報表
+| Method | Path | 說明 |
+|---|---|---|
+| GET | /reports/revenue?from=&to= | 營收 |
+| GET | /reports/attendance | 出席率/爽約率 |
+| GET | /reports/utilization | 人員稼動率 |
+| GET | /reports/heatmap | 熱門時段熱力圖 |
+
+## 4. 平台管理端 API（/admin）
+
+| Method | Path | 說明 |
+|---|---|---|
+| GET/POST/PUT | /merchants | 商家管理、審核、上下架 |
+| PUT | /merchants/:id/plan | 訂閱方案切換 |
+| GET | /dashboard | 全平台指標 |
+| GET | /audit-logs | 稽核日誌 |
+| POST | /announcements | 系統公告 |
+
+## 5. Webhook / 事件（供整合與通知模組訂閱）
+
+| 事件 | 觸發 |
+|---|---|
+| booking.created / confirmed / rescheduled / cancelled | 預約生命週期 |
+| booking.late / no_show / completed | 出席相關 |
+| wallet.deducted / refunded / expiring | 扣減相關 |
+| member.registered | 新會員 |
+
+## 6. 關鍵 API 範例
+
+**GET /app/merchants/cube/availability?service_id=svc_01&date=2026-07-15**
+
+```json
+{
+  "date": "2026-07-15",
+  "timezone": "Asia/Taipei",
+  "service": { "id": "svc_01", "name": "60分鐘私人教練", "duration_min": 60 },
+  "slots": [
+    { "start_at": "2026-07-15T10:00:00+08:00", "staff_ids": ["stf_a", "stf_b"] },
+    { "start_at": "2026-07-15T11:30:00+08:00", "staff_ids": ["stf_a"] }
+  ]
+}
+```
+
+**POST /app/bookings**
+
+```json
+// Request（Idempotency-Key: 7f3e...）
+{
+  "merchant_id": "mch_cube",
+  "service_id": "svc_01",
+  "staff_id": "stf_a",
+  "start_at": "2026-07-15T10:00:00+08:00",
+  "price_option_id": "po_pass10"
+}
+// Response 201
+{
+  "id": "bk_123",
+  "status": "confirmed",
+  "deduction": { "type": "pass", "units": 1, "balance_after": 7 },
+  "policy_summary": {
+    "reschedule_before": "2026-07-14T10:00:00+08:00",
+    "cancel_rules": "24小時前全額返還，之內返還50%",
+    "late_grace_min": 15
+  }
+}
+```
