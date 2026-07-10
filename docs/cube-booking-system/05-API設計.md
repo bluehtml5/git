@@ -61,7 +61,8 @@
 | Method | Path | 說明 |
 |---|---|---|
 | GET | /bookings?date=&staff_id=&status= | 預約查詢 |
-| POST | /bookings | 代客預約 |
+| POST | /bookings | **代客預約**（會員或非會員，見下方範例） |
+| POST | /bookings/recurring | 重複性預約批次建立 `{pattern, weeks, ...}` |
 | POST | /bookings/:id/approve\|reject | 審核（審核制） |
 | POST | /bookings/:id/check-in | 報到 |
 | POST | /bookings/:id/reschedule | 商家改期（可越過期限限制，需原因） |
@@ -76,6 +77,12 @@
 | GET | /members/:id | 會員詳情（資產、預約史、爽約記錄） |
 | POST | /members/:id/wallets | 販售/贈送卡、儲值 |
 | POST | /wallets/:id/adjust | 手動調帳 `{change, note}`（留稽核） |
+
+### 操作紀錄（稽核）
+| Method | Path | 說明 |
+|---|---|---|
+| GET | /operation-logs?staff_id=&action=&from=&to= | **員工操作紀錄查詢**（依同事/動作/期間篩選） |
+| GET | /bookings/:id/events | 單筆預約完整操作軌跡（誰建立/改期/報到） |
 
 ### 報表
 | Method | Path | 說明 |
@@ -117,6 +124,48 @@
     { "start_at": "2026-07-15T10:00:00+08:00", "staff_ids": ["stf_a", "stf_b"] },
     { "start_at": "2026-07-15T11:30:00+08:00", "staff_ids": ["stf_a"] }
   ]
+}
+```
+
+**POST /biz/bookings（商家端代客預約）**
+
+```json
+// 幫非會員（電話客）建立，越過提前期限限制
+{
+  "guest_name": "陳先生",
+  "guest_phone": "0912345678",
+  "service_id": "svc_01",
+  "staff_id": "stf_a",
+  "start_at": "2026-07-10T18:00:00+08:00",
+  "price_option_id": null,            // 到店付款
+  "policy_override": true,
+  "override_reason": "電話預約，客人1小時後到"
+}
+// Response 201：source=staff、created_by_staff_id 自動取自登入員工，
+// 並寫入 booking_event 與 operation_log
+```
+
+**GET /biz/operation-logs?staff_id=stf_wang&from=2026-07-01**
+
+```json
+{
+  "data": [
+    {
+      "staff": { "id": "stf_wang", "name": "王小明" },
+      "action": "booking_create",
+      "target": { "type": "booking", "id": "bk_456" },
+      "detail": { "guest_name": "陳先生", "policy_override": true },
+      "created_at": "2026-07-10T10:32:00+08:00"
+    },
+    {
+      "staff": { "id": "stf_wang", "name": "王小明" },
+      "action": "wallet_adjust",
+      "target": { "type": "wallet_account", "id": "wa_789" },
+      "detail": { "change": 1, "note": "系統誤扣補回" },
+      "created_at": "2026-07-09T15:10:00+08:00"
+    }
+  ],
+  "total": 2
 }
 ```
 
