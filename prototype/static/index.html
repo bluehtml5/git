@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>DeskLite — 第二螢幕</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #000; touch-action: none; overscroll-behavior: none;
+    font-family: -apple-system, "PingFang TC", sans-serif;
+  }
+  #screen { display: block; width: 100%; height: 100%; object-fit: contain; }
+  #hud {
+    position: fixed; top: env(safe-area-inset-top, 8px); right: 8px;
+    display: flex; gap: 8px; align-items: center;
+    color: #9ca3af; font-size: 12px; z-index: 10;
+    background: rgba(0,0,0,.55); border-radius: 10px; padding: 6px 10px;
+    transition: opacity .3s; opacity: 1;
+  }
+  #hud.faded { opacity: 0; pointer-events: none; }
+  #hud button {
+    background: #262626; color: #e5e5e5; border: 0; border-radius: 6px;
+    padding: 4px 10px; font-size: 12px;
+  }
+  #overlay {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    color: #e5e5e5; background: #000; z-index: 20; text-align: center;
+  }
+  #overlay.hidden { display: none; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b;
+         animation: pulse 1s infinite alternate; }
+  @keyframes pulse { to { opacity: .3; } }
+</style>
+</head>
+<body>
+<canvas id="screen"></canvas>
+
+<div id="overlay">
+  <div class="dot"></div>
+  <div id="overlay-msg">正在連線到電腦…</div>
+  <div style="color:#737373;font-size:13px">連線後畫面會直接顯示,觸控會回傳到電腦</div>
+</div>
+
+<div id="hud">
+  <span id="stat">— fps · — ms</span>
+  <button id="fs-btn">全螢幕</button>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('screen');
+  const ctx = canvas.getContext('2d');
+  const overlay = document.getElementById('overlay');
+  const overlayMsg = document.getElementById('overlay-msg');
+  const stat = document.getElementById('stat');
+  const hud = document.getElementById('hud');
+
+  let remoteW = 0, remoteH = 0;
+  let frames = 0, latency = null;
+  let ws = null;
+
+  function connect() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${proto}://${location.host}/ws`);
+    ws.binaryType = 'arraybuffer';
+
+    ws.onopen = () => { overlayMsg.textContent = '已連線,等待畫面…'; };
+
+    ws.onmessage = async (ev) => {
+      if (typeof ev.data === 'string') {
+        const msg = JSON.parse(ev.data);
+        if (msg.type === 'config') {
+          remoteW = msg.width; remoteH = msg.height;
+          canvas.width = remoteW; canvas.height = remoteH;
+        } else if (msg.type === 'pong') {
+          latency = Math.round(performance.now() - msg.t);
+        }
+        return;
+      }
+      // 二進位訊息 = 一張 JPEG 畫面
+      const bitmap = await createImageBitmap(new Blob([ev.data], {type: 'image/jpeg'}));
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close();
+      frames++;
+      overlay.classList.add('hidden');
+    };
+
+    ws.onclose = () => {
+      overlay.classList.remove('hidden');
+      overlayMsg.textContent = '連線中斷,3 秒後重試…';
+      setTimeout(connect, 3000);
+    };
+  }
+  connect();
+
+  // ---- 觸控 / 滑鼠 / Apple Pencil → 回傳給電腦 ----
+  // canvas 用 object-fit: contain 縮放,要把點擊座標換算回遠端螢幕座標
+  function toRemote(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const scale = Math.min(rect.width / remoteW, rect.height / remoteH);
+    const offX = rect.left + (rect.width - remoteW * scale) / 2;
+    const offY = rect.top + (rect.height - remoteH * scale) / 2;
+    const x = (clientX - offX) / (remoteW * scale);
+    const y = (clientY - offY) / (remoteH * scale);
+    if (x < 0 || x > 1 || y < 0 || y > 1) return null;
+    return {x, y};
+  }
+
+  function sendPointer(event, e) {
+    if (!ws || ws.readyState !== WebSocket.OPEN || !remoteW) return;
+    const pos = toRemote(e.clientX, e.clientY);
+    if (!pos) return;
+    ws.send(JSON.stringify({
+      type: 'pointer', event,
+      x: pos.x, y: pos.y,
+      pressure: e.pressure ?? 0,
+      pointerType: e.pointerType ?? 'mouse',
+    }));
+  }
+
+  let pointerDown = false;
+  canvas.addEventListener('pointerdown', e => {
+    pointerDown = true;
+    canvas.setPointerCapture(e.pointerId);
+    sendPointer('down', e);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (pointerDown) sendPointer('move', e);
+  });
+  canvas.addEventListener('pointerup', e => {
+    pointerDown = false;
+    sendPointer('up', e);
+  });
+  canvas.addEventListener('pointercancel', e => {
+    pointerDown = false;
+    sendPointer('up', e);
+  });
+
+  // ---- 全螢幕 + HUD ----
+  document.getElementById('fs-btn').addEventListener('click', () => {
+    const el = document.documentElement;
+    (el.requestFullscreen || el.webkitRequestFullscreen)?.call(el);
+  });
+  let hudTimer = setTimeout(() => hud.classList.add('faded'), 5000);
+  document.addEventListener('pointerdown', () => {
+    hud.classList.remove('faded');
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(() => hud.classList.add('faded'), 5000);
+  });
+
+  // ---- 統計:fps 與延遲 ----
+  setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({type: 'ping', t: performance.now()}));
+    }
+    stat.textContent = `${frames} fps · ${latency ?? '—'} ms`;
+    frames = 0;
+  }, 1000);
+})();
+</script>
+</body>
+</html>

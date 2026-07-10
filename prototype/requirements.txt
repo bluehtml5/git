@@ -1,0 +1,6 @@
+aiohttp>=3.9
+mss>=9.0
+Pillow>=10.0
+qrcode>=7.4
+# Linux 輸入注入用(其他平台可省略)
+python-xlib>=0.33; sys_platform == "linux"
