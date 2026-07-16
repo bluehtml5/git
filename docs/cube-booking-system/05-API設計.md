@@ -31,10 +31,7 @@
 | GET | /merchants/:slug/availability | **可預約時段**<br/>`?service_id=&date=&staff_id?=` |
 | POST | /bookings | 建立預約 `{service_id, staff_id?, start_at, price_option_id}` |
 | GET | /bookings?status=upcoming | 我的預約 |
-| GET | /bookings/:id | 預約詳情 |
-| POST | /bookings/:id/reschedule | 改期 `{new_start_at, staff_id?}` |
-| POST | /bookings/:id/cancel | 取消（回傳返還金額試算） |
-| POST | /bookings/:id/late-notice | 回報遲到 `{minutes}` |
+| GET | /bookings/:id | 預約詳情（含商家聯絡方式；遲到/改期/取消請聯絡商家） |
 
 ## 3. 商家端 API（/biz）
 
@@ -64,11 +61,13 @@
 | POST | /bookings | **代客預約**（會員或非會員，見下方範例） |
 | POST | /bookings/recurring | 重複性預約批次建立 `{pattern, weeks, ...}` |
 | POST | /bookings/:id/approve\|reject | 審核（審核制） |
-| POST | /bookings/:id/check-in | 報到 |
-| POST | /bookings/:id/reschedule | 商家改期（可越過期限限制，需原因） |
-| POST | /bookings/:id/cancel | 商家取消 |
-| POST | /bookings/:id/no-show | 標記爽約 |
-| POST | /bookings/:id/complete | 完成 |
+| PUT | /bookings/:id/late-note | 遲到註記 `{note}`（行事曆顯示 ⏰） |
+| GET | /bookings/:id/cancel-preview | 取消返還試算（依 cancel_rules） |
+| POST | /bookings/:id/reschedule | 商家改期 `{new_start_at, staff_id?}` |
+| POST | /bookings/:id/cancel | 商家取消 `{refund_pct?, reason?}`（調整試算需填原因） |
+| POST | /bookings/:id/no-show | 標記爽約（自動套罰則，可調整） |
+| POST | /bookings/:id/complete | 標記完成 |
+| POST | /bookings/batch-complete | 批次標記完成 `{date, booking_ids?}` |
 
 ### 派工（指派員工）
 | Method | Path | 說明 |
@@ -118,7 +117,7 @@
 | 事件 | 觸發 |
 |---|---|
 | booking.created / confirmed / rescheduled / cancelled | 預約生命週期 |
-| booking.late / no_show / completed | 出席相關 |
+| booking.no_show / completed | 出席相關 |
 | wallet.deducted / refunded / expiring | 扣減相關 |
 | member.registered | 新會員 |
 
@@ -197,9 +196,9 @@
   "status": "confirmed",
   "deduction": { "type": "pass", "units": 1, "balance_after": 7 },
   "policy_summary": {
-    "reschedule_before": "2026-07-14T10:00:00+08:00",
     "cancel_rules": "24小時前全額返還，之內返還50%",
-    "late_grace_min": 15
+    "change_notice": "如需改期、取消或會遲到，請聯絡商家處理",
+    "merchant_contact": { "phone": "02-12345678", "line": "@cube" }
   }
 }
 ```
