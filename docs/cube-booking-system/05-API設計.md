@@ -70,6 +70,17 @@
 | POST | /bookings/:id/no-show | 標記爽約 |
 | POST | /bookings/:id/complete | 完成 |
 
+### 派工（指派員工）
+| Method | Path | 說明 |
+|---|---|---|
+| GET | /bookings/unassigned?date= | 待指派預約列表 |
+| GET | /bookings/:id/assign-candidates | 該時段可指派員工（含可用性/負載/不可用原因） |
+| POST | /bookings/:id/assign | 指派員工 `{staff_id, notify_member?}` |
+| POST | /bookings/:id/reassign | 改派換人 `{staff_id, reason}`（鎖定期內需 Owner） |
+| POST | /bookings/auto-assign | 批次自動派工 `{date, strategy?}`，回傳建議供確認 |
+| GET | /assignments?staff_id=&status=proposed | 員工的待確認指派 |
+| POST | /assignments/:id/accept \| reject | 員工接受/拒絕指派 |
+
 ### 會員與扣減
 | Method | Path | 說明 |
 |---|---|---|
