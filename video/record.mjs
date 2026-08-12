@@ -58,9 +58,10 @@ async function recordMock(browser) {
     recordVideo: { dir: OUT, size: { width: 1080, height: 1920 } },
   });
   const page = await ctx.newPage();
-  await page.goto('file://' + resolve(here, 'mockup.html') + '?clean=1');
+  // once=1：播一輪就停在結尾卡，錄影不會截在循環回開頭的地方
+  await page.goto('file://' + resolve(here, 'mockup.html') + '?clean=1&once=1');
   await sleep(600);          // 讓第一幀穩定
-  await sleep(21_500);       // 一整輪動畫（改動分鏡長度時記得同步調整）
+  await sleep(19_500);       // 一輪分鏡（約 17.5 秒）+ 結尾卡停留
   await ctx.close();
 }
 

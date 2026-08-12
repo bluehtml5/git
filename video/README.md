@@ -1,13 +1,31 @@
 # 「您可能喜歡...」相關商品推薦　功能更新影片
 
-錄一支 19 秒直式影片，說明手機商品頁新增的「您可能喜歡...」推薦區塊。
+CUBE.mo 開店平台的功能更新影片：手機商品頁新增的「您可能喜歡...」推薦區塊。
+demo 畫面以平台上的商戶「歌謠 KOIO 1985」的商品頁為例，結尾接 CUBE 正式品牌片尾。
+成品約 25 秒、1080×1920。
 
 ```
 video/
 ├─ storyboard.md   分鏡、字卡文案、素材檢查表　← 先看這份
-├─ mockup.html     可直接錄影的手機介面動畫（16.5 秒循環）
-└─ record.mjs      Playwright 自動錄影腳本（真實網站 / mockup 兩種模式）
+├─ mockup.html     可直接錄影的手機介面動畫（依實際商品頁重建）
+├─ record.mjs      Playwright 自動錄影腳本（真實網站 / mockup 兩種模式）
+├─ finish.sh       轉 mp4 並接上 CUBE 片尾
+└─ assets/         放 cube-outro.mp4（品牌片尾，不進版控）
 ```
+
+## 完整流程
+
+```bash
+npm i -D playwright && npx playwright install chromium
+
+node video/record.mjs --mock                                          # 1. 錄 demo
+./video/finish.sh video/out/page@*.webm video/assets/cube-outro.mp4   # 2. 轉檔 + 接片尾
+# → video/out/final.mp4
+```
+
+`finish.sh` 會把兩段都正規化成 1080×1920 / 30fps / 有音軌再接起來——少了這步，
+兩段規格不一致，concat 會對不上，或是把片尾的聲音丟掉（demo 本身沒有音軌）。
+ffmpeg 不在 PATH 時用 `FFMPEG=/path/to/ffmpeg ./video/finish.sh ...`。
 
 ## 快速開始
 
@@ -19,14 +37,12 @@ xdg-open video/mockup.html      # Linux
 ```
 
 鍵盤：`space` 重播、`c` 隱藏說明文字（錄影模式）、`1` 切換半速預覽。
+網址參數：`?clean=1` 隱藏說明、`?once=1` 播一輪就停在結尾卡（錄影用，避免截在循環回開頭）。
 
-**直接輸出影片檔**
+**錄真實網站**
 
 ```bash
-npm i -D playwright && npx playwright install chromium
-
-node video/record.mjs --mock                    # 錄 mockup
-node video/record.mjs --live https://你的網站/item/315537
+node video/record.mjs --live https://koio.com/item/349671
 ```
 
 推薦區塊自動找不到的話，用選擇器指定：
@@ -35,17 +51,10 @@ node video/record.mjs --live https://你的網站/item/315537
 node video/record.mjs --live <url> --selector "section.product-recommendations"
 ```
 
-輸出在 `video/out/*.webm`。轉成社群平台吃的 mp4：
+輸出在 `video/out/*.webm`，接著跑 `finish.sh` 轉檔並接上片尾。
 
-```bash
-ffmpeg -i video/out/xxx.webm \
-  -vf "scale=1080:1920:force_original_aspect_ratio=decrease,\
-pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0x0c0d10,fps=30" \
-  -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p \
-  -movflags +faststart video/out/recs.mp4
-```
-
-配上音樂與旁白（音樂壓到 -25 dB，整體響度標準化到 -14 LUFS）：
+要自己配音樂與旁白（音樂壓到 -25 dB，整體響度標準化到 -14 LUFS）——注意片尾自帶原聲，
+混音時要保留或另外處理：
 
 ```bash
 ffmpeg -i recs.mp4 -i vo.wav -i music.mp3 \

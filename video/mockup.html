@@ -219,16 +219,21 @@
   #caption.on .kicker{opacity:1}
   #caption.on .line{opacity:1; transform:none}
 
-  /* 結尾卡 */
+  /* 結尾卡：CUBE 片尾的視覺語言（小白字 + 大黃字），之後接真正的品牌片尾 */
   #endcard{position:absolute; inset:0; background:#0c0d10; z-index:60; opacity:0; pointer-events:none;
-           display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px;
+           display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
            transition:opacity .5s ease}
   #endcard.on{opacity:1}
-  #endcard .logo{transform:scale(1.6); margin-bottom:10px}
-  #endcard .rule{width:56px; height:2px; background:#3a3d45}
-  #endcard .big{font-size:35px; font-weight:600; line-height:1.36; text-align:center}
-  #endcard .cta2{margin-top:4px; font-size:16px; letter-spacing:1px; color:#fff;
-                 background:var(--brand); padding:13px 30px; border-radius:4px; font-weight:600}
+  #endcard .small{font-size:19px; color:#fff; letter-spacing:2px; opacity:0;
+                  transition:opacity .4s ease .1s}
+  #endcard .big{font-size:46px; font-weight:800; line-height:1.28; text-align:center;
+                color:#FAFB4B; letter-spacing:1px; margin-top:2px;
+                opacity:0; transform:translateY(10px);
+                transition:opacity .45s ease .25s, transform .45s cubic-bezier(.2,.7,.3,1) .25s}
+  #endcard .small2{margin-top:34px}
+  #endcard.on .small, #endcard.on .big{opacity:1; transform:none}
+  #endcard .big2{transition-delay:.85s}
+  #endcard .small2{transition-delay:.7s}
 
   #hud{position:fixed; left:20px; bottom:18px; font-size:12px; line-height:1.9; color:#767b86;
        font-family:ui-monospace,Menlo,monospace}
@@ -311,11 +316,13 @@
 
   <div id="caption"><div class="kicker"></div><div class="line"></div></div>
 
+  <!-- 這張卡是接進 CUBE 正式片尾前的橋接卡：說清楚「上了什麼」，
+       品牌訊息交給後面接上的真實片尾（finish.sh 會接） -->
   <div id="endcard">
-    <span class="logo"><span class="cn">歌謠</span><span class="en">KOIO 1985</span></span>
-    <div class="rule"></div>
-    <div class="big">您可能喜歡<br>相關商品推薦上線</div>
-    <div class="cta2">立即體驗</div>
+    <div class="small">CUBE.mo 開店平台　商品頁新功能</div>
+    <div class="big">您可能喜歡</div>
+    <div class="small small2">同專輯其他版本、同歌手其他作品</div>
+    <div class="big big2">自動推薦</div>
   </div>
 </div>
 
@@ -494,6 +501,7 @@ setInterval(() => {
 }, 250);
 
 /* ---------- 動畫工具 ---------- */
+const ONCE = new URLSearchParams(location.search).has('once');
 let speed = 1;
 const wait = ms => new Promise(r => setTimeout(r, ms / speed));
 const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
@@ -617,6 +625,7 @@ async function play(){
   $('#caption').classList.remove('on');
   await wait(300);
   $('#endcard').classList.add('on');
+  if (ONCE) return;                // 錄影時停在結尾卡，不要循環回開頭
   await wait(2600);
   $('#endcard').classList.remove('on');
   await wait(700);
@@ -626,7 +635,7 @@ let running = false;
 async function loop(){
   if (running) return;
   running = true;
-  while (true) await play();       // eslint-disable-line no-constant-condition
+  do { await play(); } while (!ONCE);
 }
 
 function fit(){
@@ -641,6 +650,7 @@ addEventListener('keydown', e => {
   if (e.key === '1') speed = speed === 1 ? .5 : 1;
 });
 if (new URLSearchParams(location.search).has('clean')) document.body.classList.add('clean');
+/* ?once=1 —— 播一輪就停在結尾卡（錄影用）；不加則無限循環（預覽用） */
 
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(loop));
 </script>
