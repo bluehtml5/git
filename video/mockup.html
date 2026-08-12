@@ -33,18 +33,39 @@
     background-image:radial-gradient(#fff 1px, transparent 1px); background-size:3px 3px;
   }
 
-  /* ================= 手機 ================= */
+  /* ================= 手機 =================
+     預設「全出血」：介面填滿整個 1080x1920，不留背景邊。
+     app 視窗維持 390 寬（字級、間距才跟真機一致），高度取 9:16 → 693.33，
+     再等比放大 540/390 = 1.3846 倍填滿舞台。
+     加 ?frame=1 可切回「深色底 + 手機外框」的版本。 */
   #phone{
-    position:absolute; left:50%; top:56px; width:414px; height:868px; margin-left:-207px;
+    position:absolute; left:0; top:0; width:540px; height:960px;
+    padding:0; background:none; box-shadow:none;
+  }
+  #screen{
+    position:relative; width:390px; height:693.33px; overflow:hidden;
+    background:var(--paper); color:var(--ink);
+    display:flex; flex-direction:column;
+    transform:scale(1.384615); transform-origin:top left;
+  }
+  /* 手機外框版 */
+  body.framed #phone{
+    left:50%; top:56px; width:414px; height:868px; margin-left:-207px;
     transform:scale(.80); transform-origin:top center;
     background:#1c1d21; border-radius:56px; padding:12px;
     box-shadow:0 40px 80px rgba(0,0,0,.55), 0 0 0 2px #34363d inset;
   }
-  #screen{
-    position:relative; width:390px; height:844px; overflow:hidden;
-    border-radius:44px; background:var(--paper); color:var(--ink);
-    display:flex; flex-direction:column;
+  body.framed #screen{width:390px; height:844px; border-radius:44px; transform:none}
+
+  /* 字卡壓在畫面下方，用漸層壓底確保白字讀得到，但不蓋住 tab bar */
+  #scrim{
+    position:absolute; left:0; right:0; bottom:88px; height:330px; z-index:30; pointer-events:none;
+    background:linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 30%,
+                                          rgba(0,0,0,.82) 62%, rgba(0,0,0,.86) 100%);
+    opacity:0; transition:opacity .34s ease;
   }
+  #scrim.on{opacity:1}
+  body.framed #scrim{display:none}
 
   .statusbar{
     flex:none; height:44px; display:flex; align-items:flex-end; justify-content:space-between;
@@ -193,6 +214,9 @@
   .contact .badge em{font-style:normal; color:var(--brand); font-size:9px}
   .contact .badge u{text-decoration:none; color:#e2231a; font-size:6.5px}
   .contact .txt{font-size:14px; letter-spacing:2px}
+  /* 全出血版把兩顆浮動鈕往上移，讓出下方的字卡區；?frame=1 維持真實位置 */
+  body:not(.framed) .contact{bottom:238px}
+  body:not(.framed) .totop{bottom:196px}
   .totop{position:absolute; right:12px; bottom:78px; width:42px; height:42px; background:var(--brand);
          border-radius:3px; display:flex; align-items:center; justify-content:center; z-index:8;
          opacity:0; transition:opacity .3s ease}
@@ -209,13 +233,17 @@
   }
 
   /* 字卡 */
-  #caption{position:absolute; left:36px; right:36px; top:788px; height:136px;
-           display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center}
-  #caption .kicker{font-size:12px; letter-spacing:4px; color:#8b8f9a; font-weight:600;
-                   opacity:0; transition:opacity .3s ease}
-  #caption .line{font-size:28px; line-height:1.36; font-weight:600; letter-spacing:.6px;
-                 opacity:0; transform:translateY(8px);
+  #caption{position:absolute; left:30px; right:30px; bottom:132px; z-index:32;
+           display:flex; flex-direction:column; align-items:center; gap:9px; text-align:center}
+  body.framed #caption{top:788px; bottom:auto; height:136px}
+  #caption .kicker{font-size:12px; letter-spacing:4px; color:#d6d9e0; font-weight:600;
+                   opacity:0; transition:opacity .3s ease;
+                   text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  #caption .line{font-size:31px; line-height:1.34; font-weight:700; letter-spacing:.6px;
+                 opacity:0; transform:translateY(8px); text-shadow:0 2px 12px rgba(0,0,0,.65);
                  transition:opacity .34s ease, transform .34s cubic-bezier(.2,.7,.3,1)}
+  body.framed #caption .kicker{color:#8b8f9a; text-shadow:none}
+  body.framed #caption .line{font-size:28px; font-weight:600; text-shadow:none}
   #caption.on .kicker{opacity:1}
   #caption.on .line{opacity:1; transform:none}
 
@@ -314,6 +342,7 @@
     </div>
   </div>
 
+  <div id="scrim"></div>
   <div id="caption"><div class="kicker"></div><div class="line"></div></div>
 
   <!-- 這張卡是接進 CUBE 正式片尾前的橋接卡：說清楚「上了什麼」，
@@ -544,11 +573,16 @@ function tapEl(el){
 function caption(kicker, line){
   const c = $('#caption');
   c.classList.remove('on');
+  $('#scrim').classList.add('on');
   setTimeout(() => {
     c.querySelector('.kicker').textContent = kicker;
     c.querySelector('.line').innerHTML = line;
     c.classList.add('on');
   }, 220 / speed);
+}
+function captionOff(){
+  $('#caption').classList.remove('on');
+  $('#scrim').classList.remove('on');
 }
 function setCart(n, pop){
   ['#cartTop', '#cartTab'].forEach(s => {
@@ -567,40 +601,40 @@ async function play(){
   $$('.card').forEach(c => c.classList.remove('show','tapped'));
   pageB.querySelectorAll('.card').forEach(c => c.classList.add('show'));
   $$('.recs').forEach(r => r.classList.remove('lit'));
-  $('#caption').classList.remove('on');
+  captionOff();
   await wait(400);
 
   const recsA  = pageA.querySelector('.recs');
   const cardsA = [...pageA.querySelectorAll('.card')];
 
   /* 1 — 熟悉的商品頁 */
-  caption('0:00', '一樣的商品頁');
+  caption('', '一樣的商品頁');
   await wait(2000);
 
   /* 2 — 往下滑，經過商品介紹與曲目 */
-  caption('0:02', '往下滑，看看有什麼不一樣');
+  caption('', '往下滑，看看有什麼不一樣');
   await scrollToEl(pageA, pageA.querySelector('.sechead'), 120, 1100);
   $('#toTop').classList.add('on');
   await wait(600);
 
   /* 3 — 「您可能喜歡...」出現 */
-  caption('0:04', '新功能<br>您可能喜歡');
+  caption('', '新功能<br>您可能喜歡');
   await scrollToEl(pageA, recsA, 40, 1000);
   recsA.classList.add('lit');
   cardsA.forEach((c, i) => setTimeout(() => c.classList.add('show'), i * 120 / speed));
   await wait(2200);
 
   /* 4 — 推薦邏輯 */
-  caption('0:07', '同一張專輯的其他版本<br>同歌手的其他作品');
+  caption('', '同一張專輯的其他版本<br>同歌手的其他作品');
   await scrollToEl(pageA, recsA, -120, 900);
   await wait(1700);
 
   /* 5 — 預售倒數 */
-  caption('0:10', '預售倒數　同步顯示');
+  caption('', '預售倒數　同步顯示');
   await wait(1700);
 
   /* 6 — 點卡片跳頁 */
-  caption('0:12', '點進去，不必回搜尋');
+  caption('', '點進去，不必回搜尋');
   const target = cardsA[1];
   await tapEl(target.querySelector('.art'));
   target.classList.add('tapped');
@@ -611,8 +645,8 @@ async function play(){
   await wait(1700);
 
   /* 7 — 加入購物車 */
-  caption('0:14', '看到喜歡的，直接加入購物車');
-  await scrollToEl(pageB, pageB.querySelector('.buyrow'), 420, 900);
+  caption('', '看到喜歡的，直接加入購物車');
+  await scrollToEl(pageB, pageB.querySelector('.buyrow'), 260, 900);
   const btn = pageB.querySelector('.addcart');
   await tapEl(btn);
   btn.classList.add('press');
@@ -622,7 +656,7 @@ async function play(){
   await wait(1800);
 
   /* 8 — 結尾卡 */
-  $('#caption').classList.remove('on');
+  captionOff();
   await wait(300);
   $('#endcard').classList.add('on');
   if (ONCE) return;                // 錄影時停在結尾卡，不要循環回開頭
@@ -649,7 +683,10 @@ addEventListener('keydown', e => {
   if (e.key === 'c') document.body.classList.toggle('clean');
   if (e.key === '1') speed = speed === 1 ? .5 : 1;
 });
-if (new URLSearchParams(location.search).has('clean')) document.body.classList.add('clean');
+const q = new URLSearchParams(location.search);
+if (q.has('clean')) document.body.classList.add('clean');
+/* ?frame=1 —— 切回「深色底 + 手機外框」的版本；預設是全出血 */
+if (q.has('frame')) document.body.classList.add('framed');
 /* ?once=1 —— 播一輪就停在結尾卡（錄影用）；不加則無限循環（預覽用） */
 
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(loop));
