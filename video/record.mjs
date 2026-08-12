@@ -60,7 +60,7 @@ async function recordMock(browser) {
   const page = await ctx.newPage();
   await page.goto('file://' + resolve(here, 'mockup.html') + '?clean=1');
   await sleep(600);          // 讓第一幀穩定
-  await sleep(17_000);       // 一整輪動畫
+  await sleep(21_500);       // 一整輪動畫（改動分鏡長度時記得同步調整）
   await ctx.close();
 }
 

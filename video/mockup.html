@@ -3,40 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>相關商品推薦 — 手機介面演示</title>
+<title>您可能喜歡 — 手機介面演示</title>
 <style>
   :root{
-    --ink:#141414; --muted:#7a7570; --line:#e7e3dc;
-    --paper:#ffffff; --stone:#f5f2ed; --pill:#141414;
+    --ink:#1a1a1a; --muted:#8a8a8a; --line:#e3e3e3; --paper:#fff;
+    --brand:#1CA9E8;   /* 品牌藍：logo 底、加入購物車、購物車角標、回頂端 */
+    --pre:#F5821F;     /* 預售橘 */
+    --red:#E8231A;     /* 出貨日期紅框 */
+    --green:#1E9E4A;   /* 自取綠 */
+    --timer:#6E6E6E;   /* 倒數列灰 */
   }
   *{box-sizing:border-box; margin:0; padding:0}
   html,body{height:100%}
   body{
-    background:#0d0e11;
+    background:#0d0e11; overflow:hidden;
     font-family:"PingFang TC","Noto Sans TC","Hiragino Sans TC","Microsoft JhengHei",
-                -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    color:#fff; overflow:hidden;
-    display:flex; align-items:center; justify-content:center;
+                Helvetica,Arial,sans-serif;
+    color:#fff; display:flex; align-items:center; justify-content:center;
   }
 
-  /* ---------- 舞台：固定 540x960 (=1080x1920 的一半)，等比縮放置中 ---------- */
+  /* ================= 舞台 540x960 → 錄成 1080x1920 ================= */
   #stage{
-    width:540px; height:960px; position:relative; flex:none;
-    background:
-      radial-gradient(120% 80% at 50% 0%, #23252c 0%, #15161a 55%, #0c0d10 100%);
-    overflow:hidden;
+    width:540px; height:960px; position:relative; flex:none; overflow:hidden;
+    background:radial-gradient(120% 80% at 50% 0%, #23252c 0%, #15161a 55%, #0c0d10 100%);
     transform-origin:center center;
   }
-  #stage::after{ /* 細微顆粒，避免漸層出現色帶 */
+  #stage::after{
     content:""; position:absolute; inset:0; pointer-events:none; opacity:.035;
-    background-image:radial-gradient(#fff 1px, transparent 1px);
-    background-size:3px 3px;
+    background-image:radial-gradient(#fff 1px, transparent 1px); background-size:3px 3px;
   }
 
-  /* ---------- 手機 ---------- */
+  /* ================= 手機 ================= */
   #phone{
-    position:absolute; left:50%; top:56px;
-    width:414px; height:868px; margin-left:-207px;
+    position:absolute; left:50%; top:56px; width:414px; height:868px; margin-left:-207px;
     transform:scale(.80); transform-origin:top center;
     background:#1c1d21; border-radius:56px; padding:12px;
     box-shadow:0 40px 80px rgba(0,0,0,.55), 0 0 0 2px #34363d inset;
@@ -48,8 +47,8 @@
   }
 
   .statusbar{
-    flex:none; height:48px; display:flex; align-items:flex-end; justify-content:space-between;
-    padding:0 26px 6px; font-size:13px; font-weight:600; letter-spacing:.2px;
+    flex:none; height:44px; display:flex; align-items:flex-end; justify-content:space-between;
+    padding:0 26px 4px; font-size:13px; font-weight:600;
   }
   .statusbar .glyphs{display:flex; gap:5px; align-items:center}
   .bar{width:3px; background:var(--ink); border-radius:1px}
@@ -58,156 +57,182 @@
   .batt::after{content:""; position:absolute; right:-4px; top:3px; width:2px; height:5px;
     background:var(--ink); border-radius:0 1px 1px 0}
 
+  /* 固定頁首 */
   .nav{
-    flex:none; height:52px; display:flex; align-items:center; justify-content:space-between;
-    padding:0 18px; border-bottom:1px solid var(--line); background:var(--paper); z-index:5;
+    flex:none; height:58px; display:flex; align-items:center; gap:12px; padding:0 14px;
+    background:var(--paper); border-bottom:1px solid #eee; z-index:6;
   }
-  .nav .wordmark{font-size:17px; font-weight:700; letter-spacing:3px}
-  .icon{width:22px; height:22px; display:block}
-  .bag{position:relative}
-  .bag .count{
-    position:absolute; top:-5px; right:-7px; min-width:16px; height:16px; padding:0 4px;
-    background:var(--ink); color:#fff; border-radius:9px;
-    font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;
+  .logo{background:var(--brand); border-radius:2px; padding:7px 10px;
+        display:flex; align-items:center; gap:7px; line-height:1}
+  .logo .cn{font-size:18px; font-weight:900; color:#FFE500; letter-spacing:2px;
+            text-shadow:0 1px 0 rgba(0,0,0,.25)}
+  .logo .en{font-size:11px; font-weight:900; color:#fff; letter-spacing:.3px}
+  .navicons{margin-left:auto; display:flex; align-items:center; gap:16px}
+  .icon{width:23px; height:23px; display:block}
+  .cart{position:relative}
+  .cart .cnt{
+    position:absolute; top:-7px; right:-9px; min-width:18px; height:18px; padding:0 4px;
+    background:var(--brand); color:#fff; border-radius:9px; font-size:10.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
     transition:transform .25s cubic-bezier(.34,1.56,.64,1);
   }
-  .bag .count.pop{transform:scale(1.55)}
+  .cart .cnt.pop{transform:scale(1.6)}
 
   #scroller{flex:1; overflow:hidden; position:relative}
   .page{position:absolute; inset:0; overflow:hidden; background:var(--paper)}
   #pageB{transform:translateX(100%); transition:transform .42s cubic-bezier(.4,0,.2,1)}
   #pageB.in{transform:translateX(0)}
-  .scrollbody{position:absolute; inset:0; overflow:hidden}
   .inner{will-change:transform}
 
-  /* ---------- 商品頁 ---------- */
-  .hero{position:relative; height:392px; background:var(--stone);
-        display:flex; align-items:center; justify-content:center}
-  .hero svg{width:300px}
-  .dots{position:absolute; bottom:16px; left:0; right:0; display:flex; gap:6px; justify-content:center}
-  .dots i{width:5px; height:5px; border-radius:50%; background:#c8c2b8}
-  .dots i:first-child{background:var(--ink); width:14px; border-radius:3px}
+  /* ---------- 頁面內容 ---------- */
+  .social{display:flex; justify-content:flex-end; gap:13px; padding:9px 16px}
+  .social span{width:21px; height:21px; border-radius:5px; display:flex;
+               align-items:center; justify-content:center; font-size:11px; font-weight:800}
 
-  .info{padding:22px 20px 0}
-  .eyebrow{font-size:11px; letter-spacing:2px; color:var(--muted); text-transform:uppercase}
-  .title{font-size:24px; font-weight:600; margin-top:7px; letter-spacing:.3px}
-  .price{font-size:17px; margin-top:8px; color:var(--ink)}
-  .sizes{display:flex; gap:8px; margin-top:20px; flex-wrap:wrap}
-  .sizes b{
-    font-weight:500; font-size:13px; width:44px; height:38px; border:1px solid var(--line);
-    border-radius:8px; display:flex; align-items:center; justify-content:center;
-  }
-  .sizes b.on{border-color:var(--ink); box-shadow:0 0 0 1px var(--ink) inset}
-  .cta{
-    margin:20px 20px 0; height:52px; border-radius:10px; background:var(--ink); color:#fff;
-    display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600;
-    letter-spacing:1px; transition:transform .12s ease;
-  }
-  .cta.press{transform:scale(.965)}
-  .rows{margin:26px 20px 0; border-top:1px solid var(--line)}
-  .rows div{display:flex; justify-content:space-between; align-items:center;
-            padding:16px 2px; border-bottom:1px solid var(--line); font-size:14px}
-  .rows span{color:var(--muted); font-size:18px; line-height:1}
+  .gallery{position:relative; padding:4px 0 10px}
+  .gallery .main{display:flex; align-items:center; justify-content:center; height:250px}
+  .gallery .main svg{width:320px}
+  .gallery .thumb{position:absolute; right:14px; bottom:4px; width:76px; height:58px;
+                  display:flex; align-items:center; justify-content:center; overflow:hidden}
+  .gallery .thumb svg{width:74px}
 
-  /* ---------- 新功能：相關商品推薦 ---------- */
-  .recs{margin-top:34px; padding-bottom:40px; position:relative}
-  .recs .ring{
-    position:absolute; left:8px; right:8px; top:-12px; bottom:12px; z-index:3;
-    border:2px solid #141414; border-radius:16px; opacity:0; pointer-events:none;
+  .ptitle{font-size:22px; font-weight:600; line-height:1.34; padding:6px 14px 0}
+  .pricerow{display:flex; align-items:baseline; gap:9px; padding:12px 14px 0; flex-wrap:wrap}
+  .price{font-size:15px; font-weight:500}
+  .price b{font-size:29px; font-weight:600; letter-spacing:-.5px}
+  .price i{font-size:17px; font-style:normal; font-weight:600}
+  .pretag{background:var(--pre); color:#fff; font-size:11px; padding:3px 6px; border-radius:2px}
+
+  .ship{display:flex; gap:10px; padding:12px 14px 0}
+  .ship div{border:1.5px solid var(--brand); border-radius:2px; padding:5px 8px; font-size:13px;
+            color:#1668a8; display:flex; align-items:center; gap:6px}
+  .ship div.pick{border-color:var(--green); color:#177c3a}
+  .ship .i{width:16px; height:16px; border-radius:50%; background:var(--brand); color:#fff;
+           font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center}
+  .ship div.pick .i{background:var(--green)}
+
+  .deadline{padding:14px 14px 0; font-size:13px; color:#D2410F; font-weight:600}
+  .shipbox{margin:10px 14px 0; background:var(--red); color:#fff; font-size:12px;
+           line-height:1.55; padding:8px 10px; border-radius:2px}
+
+  .buyrow{display:flex; align-items:center; gap:12px; padding:16px 14px 0}
+  .stepper{display:flex; align-items:center; border:1px solid #ccc; border-radius:3px; overflow:hidden}
+  .stepper b{width:32px; height:34px; display:flex; align-items:center; justify-content:center;
+             font-size:17px; font-weight:400; background:#fafafa; color:#333}
+  .stepper i{width:38px; text-align:center; font-style:normal; font-size:15px}
+  .heart{margin-left:2px}
+  .addcart{
+    margin-left:auto; background:var(--brand); color:#fff; font-size:15px; font-weight:600;
+    padding:10px 18px; border-radius:3px; transition:transform .12s ease;
   }
-  .recs.lit .ring{animation:ring 1.9s ease forwards}
-  @keyframes ring{
-    0%{opacity:0; transform:scale(1.035)}
-    22%{opacity:1; transform:scale(1)}
-    72%{opacity:1}
-    100%{opacity:0}
-  }
-  .rechead{display:flex; align-items:center; gap:9px; padding:0 20px 4px}
-  .rechead h3{font-size:16px; font-weight:600; letter-spacing:.5px}
-  .rechead .pill{
-    font-size:9px; font-weight:800; letter-spacing:1.2px; color:#fff; background:var(--pill);
-    padding:3px 7px; border-radius:4px;
-  }
-  .rechead .sub{font-size:12px; color:var(--muted); padding:0 20px}
-  .recsub{font-size:12px; color:var(--muted); padding:2px 20px 14px}
-  .rail{display:flex; gap:12px; padding:0 20px; overflow:hidden}
-  .card{
-    flex:none; width:148px; opacity:0; transform:translateY(14px);
-    transition:opacity .42s ease, transform .42s cubic-bezier(.2,.7,.3,1);
-  }
+  .addcart.press{transform:scale(.95)}
+  .upc{padding:14px 14px 0; font-size:12.5px; color:#444}
+  .upc b{font-weight:700}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; padding:12px 14px 0}
+  .chips span{border:1px solid #d5d5d5; border-radius:3px; padding:4px 9px;
+              font-size:12px; color:#333}
+
+  .sechead{margin:20px 14px 0; padding-bottom:10px; border-bottom:1px solid var(--line);
+           font-size:15px; letter-spacing:1px}
+  .body{padding:14px 14px 0; font-size:14px; line-height:1.85; color:#222}
+  .tracks{padding:12px 14px 0; font-size:14px; line-height:2.1; color:#222}
+  .tracks h5{font-size:14px; font-weight:600; margin-bottom:2px}
+
+  /* ---------- 您可能喜歡：雙欄網格 ---------- */
+  .recs{margin-top:26px; padding-bottom:26px; position:relative}
+  .rechead{margin:0 14px; padding-bottom:11px; border-bottom:1px solid var(--line);
+           font-size:15px; letter-spacing:1px}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px 14px; padding:16px 14px 0}
+  .card{opacity:0; transform:translateY(16px);
+        transition:opacity .4s ease, transform .4s cubic-bezier(.2,.7,.3,1)}
   .card.show{opacity:1; transform:none}
-  .card .thumb{
-    height:148px; background:var(--stone); border-radius:10px;
-    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
-    transition:transform .18s ease;
+  .card .pre{display:inline-block; background:var(--pre); color:#fff; font-size:11px;
+             font-weight:600; padding:2px 6px; margin-bottom:5px}
+  .card .art{position:relative; height:142px; display:flex; align-items:center;
+             justify-content:center; overflow:hidden; transition:transform .18s ease}
+  .card.tapped .art{transform:scale(.95)}
+  .card .art svg{width:152px}
+  .card .timer{
+    position:absolute; left:0; right:0; bottom:0; background:var(--timer); color:#fff;
+    font-size:13px; text-align:center; padding:4px 0; font-variant-numeric:tabular-nums;
   }
-  .card.tapped .thumb{transform:scale(.94)}
-  .card .thumb svg{width:126px}
-  .card .tag{
-    position:absolute; top:8px; left:8px; background:rgba(255,255,255,.94);
-    font-size:9.5px; font-weight:600; letter-spacing:.4px; padding:3px 6px; border-radius:4px;
-  }
-  .card .nm{font-size:12.5px; margin-top:9px; font-weight:500}
-  .card .pr{font-size:12px; color:var(--muted); margin-top:3px}
+  .card .nm{font-size:13.5px; font-weight:700; line-height:1.45; margin-top:9px; height:39px;
+            overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
+  .card .foot{display:flex; align-items:center; justify-content:space-between; margin-top:6px}
+  .card .pr{font-size:12px}
+  .card .pr b{font-size:17px; font-weight:600}
+  .card .buy{width:38px; height:31px; background:#efefef; border-radius:3px;
+             display:flex; align-items:center; justify-content:center}
 
-  .foot{background:var(--stone); padding:30px 20px 220px; margin-top:10px}
-  .foot h4{font-size:13px; font-weight:600; letter-spacing:1px}
-  .foot p{font-size:12px; color:var(--muted); margin-top:7px; line-height:1.6}
-  .foot .links{display:flex; gap:18px; margin-top:20px; font-size:12px; color:var(--muted)}
-
-  /* ---------- 手指 ---------- */
-  #finger{
-    position:absolute; width:44px; height:44px; margin:-22px 0 0 -22px; border-radius:50%;
-    background:rgba(20,20,20,.16); border:1.5px solid rgba(20,20,20,.3);
-    opacity:0; z-index:40; pointer-events:none;
+  /* 後製標註用的高亮框（品牌藍，明顯不是 app 介面的一部分） */
+  .ringwrap{position:absolute; left:7px; right:7px; top:-8px; bottom:8px; z-index:3; pointer-events:none}
+  .ringwrap i{position:absolute; inset:0; border:3px solid var(--brand); border-radius:8px; opacity:0}
+  .recs.lit .ringwrap i{animation:ring 2s ease forwards}
+  @keyframes ring{
+    0%{opacity:0; transform:scale(1.03)} 20%{opacity:1; transform:scale(1)}
+    75%{opacity:1} 100%{opacity:0}
   }
+
+  .bottompad{height:80px}
+
+  /* 底部 tab bar */
+  .tabbar{flex:none; height:62px; border-top:1px solid var(--line); background:var(--paper);
+          display:flex; align-items:center; justify-content:space-around; padding-bottom:4px; z-index:6}
+  .tabbar a{display:flex; flex-direction:column; align-items:center; gap:3px;
+            font-size:11px; color:#3a3a3a; letter-spacing:2px}
+  .tabbar a.on{color:var(--brand)}
+  .tabbar .cart .cnt{top:-6px; right:-10px}
+
+  /* 浮動聯絡鈕 / 回頂端 */
+  .contact{position:absolute; right:0; bottom:158px; height:48px; background:rgba(45,45,45,.85);
+           color:#fff; display:flex; align-items:center; gap:7px; padding:0 12px 0 5px;
+           border-radius:24px 0 0 24px; z-index:8}
+  .contact .badge{width:38px; height:38px; border-radius:50%; background:#fff;
+                  display:flex; flex-direction:column; align-items:center; justify-content:center;
+                  font-size:8px; font-weight:800; line-height:1.2; border:1px solid #e0e0e0}
+  .contact .badge em{font-style:normal; color:var(--brand); font-size:9px}
+  .contact .badge u{text-decoration:none; color:#e2231a; font-size:6.5px}
+  .contact .txt{font-size:14px; letter-spacing:2px}
+  .totop{position:absolute; right:12px; bottom:78px; width:42px; height:42px; background:var(--brand);
+         border-radius:3px; display:flex; align-items:center; justify-content:center; z-index:8;
+         opacity:0; transition:opacity .3s ease}
+  .totop.on{opacity:1}
+
+  /* 手指 */
+  #finger{position:absolute; width:44px; height:44px; margin:-22px 0 0 -22px; border-radius:50%;
+          background:rgba(20,20,20,.16); border:1.5px solid rgba(20,20,20,.32);
+          opacity:0; z-index:40; pointer-events:none}
   #finger.tap{animation:tap .62s ease forwards}
   @keyframes tap{
-    0%{opacity:0; transform:scale(1.7)}
-    30%{opacity:1; transform:scale(1)}
-    55%{opacity:1; transform:scale(.78)}
-    100%{opacity:0; transform:scale(1.5)}
+    0%{opacity:0; transform:scale(1.7)} 30%{opacity:1; transform:scale(1)}
+    55%{opacity:1; transform:scale(.78)} 100%{opacity:0; transform:scale(1.5)}
   }
 
-  /* ---------- 字卡 ---------- */
-  #caption{
-    position:absolute; left:40px; right:40px; top:786px; height:132px;
-    display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:10px;
-    text-align:center;
-  }
-  #caption .kicker{
-    font-size:12px; letter-spacing:4px; color:#8b8f9a; font-weight:600; opacity:0;
-    transition:opacity .3s ease;
-  }
-  #caption .line{
-    font-size:29px; line-height:1.34; font-weight:600; letter-spacing:.6px; color:#fff;
-    opacity:0; transform:translateY(8px);
-    transition:opacity .34s ease, transform .34s cubic-bezier(.2,.7,.3,1);
-  }
+  /* 字卡 */
+  #caption{position:absolute; left:36px; right:36px; top:788px; height:136px;
+           display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center}
+  #caption .kicker{font-size:12px; letter-spacing:4px; color:#8b8f9a; font-weight:600;
+                   opacity:0; transition:opacity .3s ease}
+  #caption .line{font-size:28px; line-height:1.36; font-weight:600; letter-spacing:.6px;
+                 opacity:0; transform:translateY(8px);
+                 transition:opacity .34s ease, transform .34s cubic-bezier(.2,.7,.3,1)}
   #caption.on .kicker{opacity:1}
   #caption.on .line{opacity:1; transform:none}
 
-  /* ---------- 結尾卡 ---------- */
-  #endcard{
-    position:absolute; inset:0; background:#0c0d10; z-index:60;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
-    opacity:0; pointer-events:none; transition:opacity .5s ease;
-  }
+  /* 結尾卡 */
+  #endcard{position:absolute; inset:0; background:#0c0d10; z-index:60; opacity:0; pointer-events:none;
+           display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px;
+           transition:opacity .5s ease}
   #endcard.on{opacity:1}
-  #endcard .mark{font-size:26px; font-weight:700; letter-spacing:9px}
-  #endcard .big{font-size:36px; font-weight:600; letter-spacing:1px; line-height:1.35; text-align:center}
+  #endcard .logo{transform:scale(1.6); margin-bottom:10px}
   #endcard .rule{width:56px; height:2px; background:#3a3d45}
-  #endcard .cta2{
-    margin-top:6px; font-size:16px; letter-spacing:1px; color:#0c0d10; background:#fff;
-    padding:13px 30px; border-radius:8px; font-weight:600;
-  }
+  #endcard .big{font-size:35px; font-weight:600; line-height:1.36; text-align:center}
+  #endcard .cta2{margin-top:4px; font-size:16px; letter-spacing:1px; color:#fff;
+                 background:var(--brand); padding:13px 30px; border-radius:4px; font-weight:600}
 
-  /* ---------- 畫面外的操作說明（錄影時自動隱藏） ---------- */
-  #hud{
-    position:fixed; left:20px; bottom:18px; font-size:12px; line-height:1.9; color:#767b86;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  }
-  #hud b{color:#c8ccd4; font-weight:600}
+  #hud{position:fixed; left:20px; bottom:18px; font-size:12px; line-height:1.9; color:#767b86;
+       font-family:ui-monospace,Menlo,monospace}
+  #hud b{color:#c8ccd4}
   body.clean #hud{display:none}
 </style>
 </head>
@@ -219,143 +244,254 @@
       <div class="statusbar">
         <span>9:41</span>
         <span class="glyphs">
-          <span class="bar" style="height:6px"></span>
-          <span class="bar" style="height:8px"></span>
-          <span class="bar" style="height:10px"></span>
-          <span class="bar" style="height:12px"></span>
-          <span style="width:6px"></span>
-          <span class="batt"><i></i></span>
+          <span class="bar" style="height:6px"></span><span class="bar" style="height:8px"></span>
+          <span class="bar" style="height:10px"></span><span class="bar" style="height:12px"></span>
+          <span style="width:6px"></span><span class="batt"><i></i></span>
         </span>
       </div>
 
       <div class="nav">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="1.6">
-          <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
-        </svg>
-        <!-- 換成你們的品牌字樣 -->
-        <span class="wordmark">BRAND</span>
-        <span class="bag">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="1.6">
-            <path d="M4 8h16l-1.3 12.4a1 1 0 0 1-1 .9H6.3a1 1 0 0 1-1-.9L4 8Z" stroke-linejoin="round"/>
-            <path d="M8.5 8V6.2a3.5 3.5 0 0 1 7 0V8" stroke-linecap="round"/>
-          </svg>
-          <b class="count" id="bagCount">1</b>
+        <svg class="icon" viewBox="0 0 24 24" stroke="#1a1a1a" stroke-width="1.9" fill="none">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/></svg>
+        <!-- ▼ 佔位造型，正式版請換成真正的 logo 圖檔 -->
+        <span class="logo"><span class="cn">歌謠</span><span class="en">KOIO 1985</span></span>
+        <span class="navicons">
+          <svg class="icon" viewBox="0 0 24 24" stroke="#1a1a1a" stroke-width="1.8" fill="none">
+            <circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4" stroke-linecap="round"/></svg>
+          <span class="cart">
+            <svg class="icon" viewBox="0 0 24 24" stroke="#1a1a1a" stroke-width="1.8" fill="none">
+              <path d="M2 3h3l2.4 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 7H6"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="10" cy="20" r="1.4" fill="#1a1a1a" stroke="none"/>
+              <circle cx="18" cy="20" r="1.4" fill="#1a1a1a" stroke="none"/></svg>
+            <b class="cnt" id="cartTop">0</b>
+          </span>
+          <svg class="icon" viewBox="0 0 24 24" stroke="#1a1a1a" stroke-width="1.7" fill="none">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3C9 6.5 9 17.5 12 21"/></svg>
         </span>
       </div>
 
       <div id="scroller">
-        <div class="page" id="pageA"><div class="scrollbody"><div class="inner"></div></div></div>
-        <div class="page" id="pageB"><div class="scrollbody"><div class="inner"></div></div></div>
+        <div class="page" id="pageA"><div class="inner"></div></div>
+        <div class="page" id="pageB"><div class="inner"></div></div>
+      </div>
+
+      <div class="contact">
+        <span class="badge"><em>歌謠</em><u>Contact Us</u></span><span class="txt">查詢</span>
+      </div>
+      <div class="totop" id="toTop">
+        <svg width="19" height="19" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.6" fill="none">
+          <path d="M12 19V6M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+
+      <div class="tabbar">
+        <a class="on"><svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none">
+          <path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>首頁</a>
+        <a><svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none">
+          <circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4" stroke-linecap="round"/></svg>搜索</a>
+        <a><svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none">
+          <path d="M12 20s-8-4.6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.4-8 10-8 10z" stroke-linejoin="round"/></svg>收藏</a>
+        <a><span class="cart">
+          <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none">
+            <path d="M2 3h3l2.4 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 7H6"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="10" cy="20" r="1.3" fill="currentColor" stroke="none"/>
+            <circle cx="18" cy="20" r="1.3" fill="currentColor" stroke="none"/></svg>
+          <b class="cnt" id="cartTab">0</b></span>購物車</a>
+        <a><svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none">
+          <circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>
+          <path d="M8.5 14.5c1 1.2 2.2 1.8 3.5 1.8s2.5-.6 3.5-1.8" stroke-linecap="round"/></svg>帳號</a>
       </div>
 
       <div id="finger"></div>
     </div>
   </div>
 
-  <div id="caption">
-    <div class="kicker"></div>
-    <div class="line"></div>
-  </div>
+  <div id="caption"><div class="kicker"></div><div class="line"></div></div>
 
   <div id="endcard">
-    <div class="mark">BRAND</div>
+    <span class="logo"><span class="cn">歌謠</span><span class="en">KOIO 1985</span></span>
     <div class="rule"></div>
-    <div class="big">相關商品推薦<br>現已上線</div>
+    <div class="big">您可能喜歡<br>相關商品推薦上線</div>
     <div class="cta2">立即體驗</div>
   </div>
 </div>
 
-<div id="hud">
-  <b>space</b> 重播　<b>c</b> 隱藏說明（錄影模式）　<b>1</b> 慢速預覽
-</div>
+<div id="hud"><b>space</b> 重播　<b>c</b> 錄影模式　<b>1</b> 半速</div>
 
 <script>
-/* =========================================================================
-   相關商品推薦 — 手機介面演示動畫
-   composition : 540 x 960 舞台，錄成 1080 x 1920 (9:16)
-   duration    : 約 16.5 秒，自動循環
-   換成你們自己的內容：改 PRODUCT / RECS / BRAND 字樣 / SHOTS 的字卡文案
-   ========================================================================= */
+/* ==========================================================================
+   「您可能喜歡...」相關商品推薦 — 手機介面演示
+   依實際商品頁重建：固定頁首、預售橘標、倒數灰列、藍色加入購物車、
+   紅色出貨日期框、標籤 chips、底部五格 tab bar、浮動查詢鈕。
+   舞台 540x960 → 錄成 1080x1920，約 19 秒循環。
 
-/* ---------- 資料（佔位符，換成真實商品） ---------- */
+   刻意的取捨：手機畫面內只重現真實存在的元素。推薦邏輯（同專輯其他版本 /
+   同歌手其他作品）用字卡說明，不在卡片上加網站沒有的標籤，避免影片演示到
+   不存在的功能。高亮框用品牌藍，讀起來是後製標註而不是 app 介面。
+   ========================================================================== */
+
+/* ---------- 商品資料（封面為抽象佔位圖，正式版換成真實商品照） ---------- */
 const PRODUCT = {
-  eyebrow:'LOW TOP SNEAKER', name:'Capri Triple White', price:'NT$ 8,280',
-  c:['#faf8f5','#ece7de','#e3ded4']
+  title:'Michael Jackson - THRILLER 1982, Red & Black Marble 紅色和黑色大理石 LP',
+  price:'280', upc:'199584611211',
+  art:{sleeve:'#101a2c', ink:'#ece6da', disc:'#8d1420', disc2:'#2b0c10'}
 };
-/* 被點進去的推薦商品 —— 必須和分鏡中被點的那張卡片一致（預設是 RECS[2]） */
+/* 被點進去的那一張 —— 必須和分鏡中被點的卡片一致（預設 RECS[1]） */
 const PRODUCT_B = {
-  eyebrow:'LOW TOP SNEAKER', name:'Capri Sage', price:'NT$ 8,280',
-  c:['#9caa91','#87977c','#b5c1aa']
+  title:'Michael Jackson - THRILLER 1982 Golden Pearl 金色珍珠 LP',
+  price:'350', upc:'199584611228',
+  art:{sleeve:'#101a2c', ink:'#ece6da', disc:'#efece4', disc2:'#bdb6a7'}
 };
 const RECS = [
-  {name:'Capri Onyx',    price:'NT$ 8,280',  tag:'同系列',    c:['#2c2c30','#1c1c20','#3b3b41']},
-  {name:'Primo Sand',    price:'NT$ 8,980',  tag:'相似材質',  c:['#dccdb7','#cbb9a0','#e9dfce']},
-  {name:'Capri Sage',    price:'NT$ 8,280',  tag:'常一起購買',c:['#9caa91','#87977c','#b5c1aa']},
-  {name:'Primo Cognac',  price:'NT$ 9,280',  tag:'相似版型',  c:['#a56740','#8e5530','#bb8054']},
-  {name:'Milo Slate',    price:'NT$ 7,580',  tag:'你瀏覽過',  c:['#6d7380','#575e69','#838b98']},
+  {title:'Michael Jackson - THRILLER 1982, Black Liquid 官方限量液態黑膠 LP',
+   price:'950', days:3,
+   art:{sleeve:'#101a2c', ink:'#ece6da', disc:'#141414', disc2:'#f4f4f4'}},
+  {title:'Michael Jackson - THRILLER 1982 Golden Pearl 金色珍珠 LP',
+   price:'350', days:19,
+   art:{sleeve:'#101a2c', ink:'#ece6da', disc:'#efece4', disc2:'#bdb6a7'}},
+  {title:'Michael Jackson - THRILLER Gold Metallic Cassette 限量版',
+   price:'180', days:3,
+   art:{sleeve:'#f4f2ed', ink:'#c1121f', disc:'#c9a227', cassette:true}},
+  {title:'Daniel Caesar – Case Study 01, Transparent Blue LP',
+   price:'385', days:8,
+   art:{sleeve:'#c9d2dc', ink:'#6d7885', disc:'#a2b5cb', disc2:'#7c92ad'}},
 ];
 
-/* ---------- 鞋子插圖 ---------- */
-function sneaker([upper, toe, collar]){
-  return `<svg viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="112" cy="127" rx="86" ry="5" fill="rgba(0,0,0,.08)"/>
-    <path d="M18 106h182c9 0 12 4 11 9-1 4-5 6-11 6H33c-9 0-15-5-15-11z" fill="#d9d2c5"/>
-    <path d="M18 96c0-6 5-9 14-9h172c8 0 12 4 12 10v9H18z" fill="#eae4d9"/>
-    <path d="M32 87c-3-30 12-51 42-56 14-2 24 5 34 15 12 12 28 20 48 25 22 5 34 10 34 16z" fill="${upper}"/>
-    <path d="M158 66c18 5 32 10 32 21h-32z" fill="${toe}"/>
-    <path d="M32 87c-2-24 8-42 28-52l9 13c-15 9-23 21-23 39z" fill="${collar}"/>
-    <path d="M74 39l40 34-9 8-39-33z" fill="rgba(255,255,255,.16)"/>
-    <g stroke="rgba(255,255,255,.9)" stroke-width="3.2" stroke-linecap="round">
-      <path d="M72 47l18 10"/><path d="M83 40l18 10"/><path d="M94 34l17 10"/>
+/* ---------- 封面插圖 ---------- */
+let uid = 0;
+function art(a){
+  const id = 'g' + (++uid);
+  const obj = a.cassette ? `
+    <g transform="translate(166,102)">
+      <rect x="-54" y="-35" width="108" height="70" rx="5" fill="${a.disc}"/>
+      <rect x="-42" y="-25" width="84" height="27" rx="3" fill="rgba(255,255,255,.5)"/>
+      <circle cx="-19" cy="13" r="12" fill="#fff" opacity=".85"/>
+      <circle cx="19" cy="13" r="12" fill="#fff" opacity=".85"/>
+      <circle cx="-19" cy="13" r="4.5" fill="${a.disc}"/><circle cx="19" cy="13" r="4.5" fill="${a.disc}"/>
+    </g>` : `
+    <g transform="translate(168,102)">
+      <circle r="78" fill="url(#${id})"/>
+      <g fill="none" stroke="rgba(0,0,0,.15)" stroke-width="1">
+        <circle r="68"/><circle r="58"/><circle r="48"/><circle r="38"/>
+      </g>
+      <circle r="25" fill="#1d3557"/><circle r="25" fill="none" stroke="rgba(255,255,255,.22)"/>
+      <circle r="2.6" fill="#fff"/>
+    </g>`;
+
+  return `<svg viewBox="0 0 270 205" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="${id}" cx="38%" cy="30%">
+      <stop offset="0%" stop-color="${a.disc}"/>
+      <stop offset="52%" stop-color="${a.disc2 || a.disc}"/>
+      <stop offset="100%" stop-color="${a.disc}"/>
+    </radialGradient></defs>
+    ${obj}
+    <g>
+      <rect x="8" y="16" width="172" height="172" fill="${a.sleeve}"/>
+      <circle cx="128" cy="72" r="42" fill="${a.ink}" opacity=".9"/>
+      <path d="M8 150 180 96 180 132 8 188Z" fill="${a.ink}" opacity=".5"/>
+      <rect x="22" y="32" width="62" height="5" rx="2.5" fill="${a.ink}" opacity=".85"/>
+      <rect x="22" y="45" width="40" height="5" rx="2.5" fill="${a.ink}" opacity=".55"/>
+      <rect x="8" y="16" width="172" height="172" fill="none" stroke="rgba(0,0,0,.1)"/>
     </g>
   </svg>`;
 }
 
-/* ---------- 版型 ---------- */
-function pdp(p, withRecs){
-  const cards = RECS.map(r => `
-    <div class="card">
-      <div class="thumb"><span class="tag">${r.tag}</span>${sneaker(r.c)}</div>
-      <div class="nm">${r.name}</div>
-      <div class="pr">${r.price}</div>
-    </div>`).join('');
+const cartSvg = c => `<svg width="18" height="18" viewBox="0 0 24 24" stroke="${c}"
+  stroke-width="1.8" fill="none">
+  <path d="M2 3h3l2.4 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 7H6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="10" cy="20" r="1.3" fill="${c}" stroke="none"/>
+  <circle cx="18" cy="20" r="1.3" fill="${c}" stroke="none"/></svg>`;
 
-  return `
-    <div class="hero">${sneaker(p.c)}<div class="dots"><i></i><i></i><i></i><i></i></div></div>
-    <div class="info">
-      <div class="eyebrow">${p.eyebrow}</div>
-      <div class="title">${p.name}</div>
-      <div class="price">${p.price}</div>
-      <div class="sizes">
-        <b>39</b><b>40</b><b class="on">41</b><b>42</b><b>43</b><b>44</b>
+/* ---------- 版型 ---------- */
+function cards(){
+  return RECS.map((r, i) => `
+    <div class="card" data-i="${i}">
+      <div><span class="pre">預售</span></div>
+      <div class="art">${art(r.art)}<span class="timer" data-days="${r.days}">--日--:--:--</span></div>
+      <div class="nm">${r.title}</div>
+      <div class="foot">
+        <span class="pr">MOP <b>${r.price}</b>.00</span>
+        <span class="buy">${cartSvg('#333')}</span>
       </div>
-    </div>
-    <div class="cta">加入購物袋</div>
-    <div class="rows">
-      <div>材質與製作 <span>+</span></div>
-      <div>尺寸建議 <span>+</span></div>
-      <div>運送與退換 <span>+</span></div>
-    </div>
-    ${ withRecs ? `
-    <div class="recs">
-      <div class="ring"></div>
-      <div class="rechead"><h3>你可能也會喜歡</h3><span class="pill">NEW</span></div>
-      <div class="recsub">依材質、版型與你的瀏覽紀錄自動配對</div>
-      <div class="rail">${cards}</div>
-    </div>` : '<div style="height:60px"></div>' }
-    <div class="foot">
-      <h4>義大利手工製作</h4>
-      <p>每一雙由 Le Marche 的家族工坊完成，<br>採用可追溯來源的皮革。</p>
-      <div class="links"><span>客服</span><span>門市</span><span>尺寸表</span><span>永續</span></div>
-    </div>
-  `;
+    </div>`).join('');
 }
 
-const $  = s => document.querySelector(s);
+function pdp(p){
+  return `
+    <div class="social">
+      <span style="background:#1877F2;color:#fff">f</span>
+      <span style="background:linear-gradient(45deg,#F9CE34,#EE2A7B,#6228D7);color:#fff">◎</span>
+      <span style="background:#FF2741;color:#fff">书</span>
+      <span style="background:#111;color:#fff">♪</span>
+    </div>
+    <div class="gallery">
+      <div class="main">${art(p.art)}</div>
+      <div class="thumb">${art(p.art)}</div>
+    </div>
+    <h1 class="ptitle">${p.title}</h1>
+    <div class="pricerow">
+      <span class="price">MOP <b>${p.price}</b><i>.00</i></span>
+      <span class="pretag">預售類別結帳</span>
+    </div>
+    <div class="ship">
+      <div class="pick">自取 <span class="i">i</span></div>
+      <div>順豐速運 送內地及香港 <span class="i">i</span></div>
+    </div>
+    <div class="deadline">⏱ 此商品將於 2026年8月31日前截單！</div>
+    <div class="shipbox">預計出貨日期: 26年11月（根據訂單順序，陸續出貨）*　［最終以代理商交付運輸為準］</div>
+    <div class="buyrow">
+      <span class="stepper"><b>−</b><i>1</i><b>+</b></span>
+      <svg class="icon heart" viewBox="0 0 24 24" stroke="#555" stroke-width="1.7" fill="none">
+        <path d="M12 20s-8-4.6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.4-8 10-8 10z"
+              stroke-linejoin="round"/></svg>
+      <span class="addcart">加入購物車</span>
+    </div>
+    <div class="upc">UPC: <b>${p.upc}</b></div>
+    <div class="chips"><span>預訂 Preorder</span><span>Michael Jackson</span></div>
+    <div class="sechead">商品介紹</div>
+    <div class="body">
+      流行樂壇奉為「King Of Pop」的超級天王麥可傑克森，1982 年推出重量級專輯
+      Thriller，專輯獲得滾石雜誌 5 顆星評價，及 83 年葛萊美獎「最佳年度專輯」等 8 項大獎，
+      在流行榜上創下超過 4 千萬張銷售奇蹟。
+    </div>
+    <div class="tracks">
+      <h5>TRACKLIST：</h5>
+      <div>SIDE A</div>
+      <div>1. Wanna Be Startin' Somethin'</div>
+      <div>2. Baby Be Mine</div>
+      <div>3. The Girl Is Mine</div>
+      <div>4. Thriller</div>
+    </div>
+    <div class="recs">
+      <div class="ringwrap"><i></i></div>
+      <div class="rechead">您可能喜歡...</div>
+      <div class="grid">${cards()}</div>
+    </div>
+    <div class="bottompad"></div>`;
+}
+
+const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const pageA = $('#pageA'), pageB = $('#pageB');
-pageA.querySelector('.inner').innerHTML = pdp(PRODUCT, true);
-pageB.querySelector('.inner').innerHTML = pdp(PRODUCT_B, true);
+pageA.querySelector('.inner').innerHTML = pdp(PRODUCT);
+pageB.querySelector('.inner').innerHTML = pdp(PRODUCT_B);
+
+/* ---------- 預售倒數：真的在走 ---------- */
+const pad = n => String(n).padStart(2, '0');
+const start = Date.now();
+setInterval(() => {
+  const gone = (Date.now() - start) / 1000;
+  $$('.timer').forEach(el => {
+    let t = (+el.dataset.days) * 86400 + 7*3600 + 50*60 + 57 - gone;
+    if (t < 0) t = 0;
+    el.textContent = `${pad(Math.floor(t / 86400))}日${pad(Math.floor(t % 86400 / 3600))}:` +
+                     `${pad(Math.floor(t % 3600 / 60))}:${pad(Math.floor(t % 60))}`;
+  });
+}, 250);
 
 /* ---------- 動畫工具 ---------- */
 let speed = 1;
@@ -372,8 +508,6 @@ function tween(dur, fn){
     })(t0);
   });
 }
-
-/* 垂直捲動：用 transform 移動內容，比 scrollTop 更順、錄影不掉格 */
 function scrollTo(page, to, dur){
   const inner = page.querySelector('.inner');
   const from = parseFloat(inner.dataset.y || 0);
@@ -384,102 +518,102 @@ function setScroll(page, y){
   const inner = page.querySelector('.inner');
   inner.dataset.y = y; inner.style.transform = `translateY(${y}px)`;
 }
-function railTo(page, to, dur){
-  const rail = page.querySelector('.rail');
-  const from = parseFloat(rail.dataset.x || 0);
-  rail.dataset.x = to;
-  return tween(dur, k => rail.style.transform = `translateX(${from + (to - from) * k}px)`);
+/* 捲到某個元素，pad 是元素距畫面頂端要留的距離 —— 版面改了不用重算數字 */
+function scrollToEl(page, el, pad, dur){
+  return scrollTo(page, -(el.offsetTop - pad), dur);
 }
-
 function tap(x, y){
   const f = $('#finger');
   f.style.left = x + 'px'; f.style.top = y + 'px';
   f.classList.remove('tap'); void f.offsetWidth; f.classList.add('tap');
   return wait(420);
 }
-
-/* 直接對元素中心點擊——版面改了也不用重算座標 */
 function tapEl(el){
-  const s = $('#screen').getBoundingClientRect();
-  const r = el.getBoundingClientRect();
-  const k = s.width / 390;                       // 舞台縮放比
-  return tap((r.left + r.width / 2 - s.left) / k, (r.top + r.height / 2 - s.top) / k);
+  const s = $('#screen').getBoundingClientRect(), r = el.getBoundingClientRect();
+  const k = s.width / 390;
+  return tap((r.left + r.width/2 - s.left) / k, (r.top + r.height/2 - s.top) / k);
 }
-
 function caption(kicker, line){
   const c = $('#caption');
   c.classList.remove('on');
-  return wait(220).then(() => {
+  setTimeout(() => {
     c.querySelector('.kicker').textContent = kicker;
     c.querySelector('.line').innerHTML = line;
     c.classList.add('on');
+  }, 220 / speed);
+}
+function setCart(n, pop){
+  ['#cartTop', '#cartTab'].forEach(s => {
+    const el = $(s); el.textContent = n;
+    if (pop){ el.classList.add('pop'); setTimeout(() => el.classList.remove('pop'), 280 / speed); }
   });
 }
 
 /* ---------- 分鏡 ---------- */
 async function play(){
-  /* 重設 */
   $('#endcard').classList.remove('on');
   pageB.classList.remove('in');
-  $('#bagCount').textContent = '1';
+  $('#toTop').classList.remove('on');
+  setCart(0);
   setScroll(pageA, 0); setScroll(pageB, 0);
-  pageA.querySelector('.rail').style.transform = 'translateX(0)';
-  pageA.querySelector('.rail').dataset.x = 0;
   $$('.card').forEach(c => c.classList.remove('show','tapped'));
-  /* 第二頁的推薦卡片不需要進場動畫，直接顯示 */
   pageB.querySelectorAll('.card').forEach(c => c.classList.add('show'));
   $$('.recs').forEach(r => r.classList.remove('lit'));
   $('#caption').classList.remove('on');
-
   await wait(400);
+
+  const recsA  = pageA.querySelector('.recs');
+  const cardsA = [...pageA.querySelectorAll('.card')];
 
   /* 1 — 熟悉的商品頁 */
   caption('0:00', '一樣的商品頁');
-  await wait(1900);
+  await wait(2000);
 
-  /* 2 — 往下滑 */
+  /* 2 — 往下滑，經過商品介紹與曲目 */
   caption('0:02', '往下滑，看看有什麼不一樣');
-  await scrollTo(pageA, -430, 1100);
-  await wait(500);
+  await scrollToEl(pageA, pageA.querySelector('.sechead'), 120, 1100);
+  $('#toTop').classList.add('on');
+  await wait(600);
 
-  /* 3 — 推薦區塊出現 */
-  caption('0:04', '新功能<br>相關商品推薦');
-  await scrollTo(pageA, -760, 900);
-  pageA.querySelector('.recs').classList.add('lit');
-  const cardsA = pageA.querySelectorAll('.card');
-  cardsA.forEach((c, i) => setTimeout(() => c.classList.add('show'), i * 110 / speed));
-  await wait(1800);
+  /* 3 — 「您可能喜歡...」出現 */
+  caption('0:04', '新功能<br>您可能喜歡');
+  await scrollToEl(pageA, recsA, 40, 1000);
+  recsA.classList.add('lit');
+  cardsA.forEach((c, i) => setTimeout(() => c.classList.add('show'), i * 120 / speed));
+  await wait(2200);
 
-  /* 4 — 橫向瀏覽 */
-  caption('0:06', '依材質、版型與瀏覽紀錄<br>自動配對');
-  await railTo(pageA, -320, 1300);
-  await wait(700);
+  /* 4 — 推薦邏輯 */
+  caption('0:07', '同一張專輯的其他版本<br>同歌手的其他作品');
+  await scrollToEl(pageA, recsA, -120, 900);
+  await wait(1700);
 
-  /* 5 — 點擊推薦商品 → 直接跳頁 */
-  caption('0:09', '一鍵跳轉，不必回到分類頁');
-  const target = cardsA[2];
-  await tapEl(target.querySelector('.thumb'));
+  /* 5 — 預售倒數 */
+  caption('0:10', '預售倒數　同步顯示');
+  await wait(1700);
+
+  /* 6 — 點卡片跳頁 */
+  caption('0:12', '點進去，不必回搜尋');
+  const target = cardsA[1];
+  await tapEl(target.querySelector('.art'));
   target.classList.add('tapped');
   await wait(160);
   target.classList.remove('tapped');
   setScroll(pageB, 0);
   pageB.classList.add('in');
-  await wait(1500);
+  await wait(1700);
 
-  /* 6 — 加入購物袋 */
-  caption('0:11', '看到喜歡的，直接加入購物袋');
-  await scrollTo(pageB, -300, 800);
-  const cta = pageB.querySelector('.cta');
-  await tapEl(cta);
-  cta.classList.add('press');
+  /* 7 — 加入購物車 */
+  caption('0:14', '看到喜歡的，直接加入購物車');
+  await scrollToEl(pageB, pageB.querySelector('.buyrow'), 420, 900);
+  const btn = pageB.querySelector('.addcart');
+  await tapEl(btn);
+  btn.classList.add('press');
   await wait(140);
-  cta.classList.remove('press');
-  const cnt = $('#bagCount');
-  cnt.textContent = '2'; cnt.classList.add('pop');
-  await wait(280); cnt.classList.remove('pop');
-  await wait(1400);
+  btn.classList.remove('press');
+  setCart(1, true);
+  await wait(1800);
 
-  /* 7 — 結尾卡 */
+  /* 8 — 結尾卡 */
   $('#caption').classList.remove('on');
   await wait(300);
   $('#endcard').classList.add('on');
@@ -492,14 +626,11 @@ let running = false;
 async function loop(){
   if (running) return;
   running = true;
-  /* eslint-disable no-constant-condition */
-  while (true) await play();
+  while (true) await play();       // eslint-disable-line no-constant-condition
 }
 
-/* ---------- 舞台縮放：不論視窗多大，構圖完全一致 ---------- */
 function fit(){
-  const s = Math.min(innerWidth / 540, innerHeight / 960);
-  $('#stage').style.transform = `scale(${s})`;
+  $('#stage').style.transform = `scale(${Math.min(innerWidth / 540, innerHeight / 960)})`;
 }
 addEventListener('resize', fit);
 fit();
@@ -507,13 +638,10 @@ fit();
 addEventListener('keydown', e => {
   if (e.code === 'Space'){ e.preventDefault(); location.reload(); }
   if (e.key === 'c') document.body.classList.toggle('clean');
-  if (e.key === '1'){ speed = speed === 1 ? .5 : 1; }
+  if (e.key === '1') speed = speed === 1 ? .5 : 1;
 });
-
-/* ?clean=1 → 隱藏說明文字，給錄影用 */
 if (new URLSearchParams(location.search).has('clean')) document.body.classList.add('clean');
 
-/* 等字體與版面就緒再開始，避免第一幀跳動 */
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(loop));
 </script>
 </body>
