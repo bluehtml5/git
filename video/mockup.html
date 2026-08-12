@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>相關商品推薦 — 手機介面演示</title>
+<style>
+  :root{
+    --ink:#141414; --muted:#7a7570; --line:#e7e3dc;
+    --paper:#ffffff; --stone:#f5f2ed; --pill:#141414;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:#0d0e11;
+    font-family:"PingFang TC","Noto Sans TC","Hiragino Sans TC","Microsoft JhengHei",
+                -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:#fff; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- 舞台：固定 540x960 (=1080x1920 的一半)，等比縮放置中 ---------- */
+  #stage{
+    width:540px; height:960px; position:relative; flex:none;
+    background:
+      radial-gradient(120% 80% at 50% 0%, #23252c 0%, #15161a 55%, #0c0d10 100%);
+    overflow:hidden;
+    transform-origin:center center;
+  }
+  #stage::after{ /* 細微顆粒，避免漸層出現色帶 */
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.035;
+    background-image:radial-gradient(#fff 1px, transparent 1px);
+    background-size:3px 3px;
+  }
+
+  /* ---------- 手機 ---------- */
+  #phone{
+    position:absolute; left:50%; top:56px;
+    width:414px; height:868px; margin-left:-207px;
+    transform:scale(.80); transform-origin:top center;
+    background:#1c1d21; border-radius:56px; padding:12px;
+    box-shadow:0 40px 80px rgba(0,0,0,.55), 0 0 0 2px #34363d inset;
+  }
+  #screen{
+    position:relative; width:390px; height:844px; overflow:hidden;
+    border-radius:44px; background:var(--paper); color:var(--ink);
+    display:flex; flex-direction:column;
+  }
+
+  .statusbar{
+    flex:none; height:48px; display:flex; align-items:flex-end; justify-content:space-between;
+    padding:0 26px 6px; font-size:13px; font-weight:600; letter-spacing:.2px;
+  }
+  .statusbar .glyphs{display:flex; gap:5px; align-items:center}
+  .bar{width:3px; background:var(--ink); border-radius:1px}
+  .batt{width:22px; height:11px; border:1.5px solid var(--ink); border-radius:3px; position:relative}
+  .batt i{position:absolute; inset:1.5px; width:70%; background:var(--ink); border-radius:1px}
+  .batt::after{content:""; position:absolute; right:-4px; top:3px; width:2px; height:5px;
+    background:var(--ink); border-radius:0 1px 1px 0}
+
+  .nav{
+    flex:none; height:52px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; border-bottom:1px solid var(--line); background:var(--paper); z-index:5;
+  }
+  .nav .wordmark{font-size:17px; font-weight:700; letter-spacing:3px}
+  .icon{width:22px; height:22px; display:block}
+  .bag{position:relative}
+  .bag .count{
+    position:absolute; top:-5px; right:-7px; min-width:16px; height:16px; padding:0 4px;
+    background:var(--ink); color:#fff; border-radius:9px;
+    font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .bag .count.pop{transform:scale(1.55)}
+
+  #scroller{flex:1; overflow:hidden; position:relative}
+  .page{position:absolute; inset:0; overflow:hidden; background:var(--paper)}
+  #pageB{transform:translateX(100%); transition:transform .42s cubic-bezier(.4,0,.2,1)}
+  #pageB.in{transform:translateX(0)}
+  .scrollbody{position:absolute; inset:0; overflow:hidden}
+  .inner{will-change:transform}
+
+  /* ---------- 商品頁 ---------- */
+  .hero{position:relative; height:392px; background:var(--stone);
+        display:flex; align-items:center; justify-content:center}
+  .hero svg{width:300px}
+  .dots{position:absolute; bottom:16px; left:0; right:0; display:flex; gap:6px; justify-content:center}
+  .dots i{width:5px; height:5px; border-radius:50%; background:#c8c2b8}
+  .dots i:first-child{background:var(--ink); width:14px; border-radius:3px}
+
+  .info{padding:22px 20px 0}
+  .eyebrow{font-size:11px; letter-spacing:2px; color:var(--muted); text-transform:uppercase}
+  .title{font-size:24px; font-weight:600; margin-top:7px; letter-spacing:.3px}
+  .price{font-size:17px; margin-top:8px; color:var(--ink)}
+  .sizes{display:flex; gap:8px; margin-top:20px; flex-wrap:wrap}
+  .sizes b{
+    font-weight:500; font-size:13px; width:44px; height:38px; border:1px solid var(--line);
+    border-radius:8px; display:flex; align-items:center; justify-content:center;
+  }
+  .sizes b.on{border-color:var(--ink); box-shadow:0 0 0 1px var(--ink) inset}
+  .cta{
+    margin:20px 20px 0; height:52px; border-radius:10px; background:var(--ink); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600;
+    letter-spacing:1px; transition:transform .12s ease;
+  }
+  .cta.press{transform:scale(.965)}
+  .rows{margin:26px 20px 0; border-top:1px solid var(--line)}
+  .rows div{display:flex; justify-content:space-between; align-items:center;
+            padding:16px 2px; border-bottom:1px solid var(--line); font-size:14px}
+  .rows span{color:var(--muted); font-size:18px; line-height:1}
+
+  /* ---------- 新功能：相關商品推薦 ---------- */
+  .recs{margin-top:34px; padding-bottom:40px; position:relative}
+  .recs .ring{
+    position:absolute; left:8px; right:8px; top:-12px; bottom:12px; z-index:3;
+    border:2px solid #141414; border-radius:16px; opacity:0; pointer-events:none;
+  }
+  .recs.lit .ring{animation:ring 1.9s ease forwards}
+  @keyframes ring{
+    0%{opacity:0; transform:scale(1.035)}
+    22%{opacity:1; transform:scale(1)}
+    72%{opacity:1}
+    100%{opacity:0}
+  }
+  .rechead{display:flex; align-items:center; gap:9px; padding:0 20px 4px}
+  .rechead h3{font-size:16px; font-weight:600; letter-spacing:.5px}
+  .rechead .pill{
+    font-size:9px; font-weight:800; letter-spacing:1.2px; color:#fff; background:var(--pill);
+    padding:3px 7px; border-radius:4px;
+  }
+  .rechead .sub{font-size:12px; color:var(--muted); padding:0 20px}
+  .recsub{font-size:12px; color:var(--muted); padding:2px 20px 14px}
+  .rail{display:flex; gap:12px; padding:0 20px; overflow:hidden}
+  .card{
+    flex:none; width:148px; opacity:0; transform:translateY(14px);
+    transition:opacity .42s ease, transform .42s cubic-bezier(.2,.7,.3,1);
+  }
+  .card.show{opacity:1; transform:none}
+  .card .thumb{
+    height:148px; background:var(--stone); border-radius:10px;
+    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+    transition:transform .18s ease;
+  }
+  .card.tapped .thumb{transform:scale(.94)}
+  .card .thumb svg{width:126px}
+  .card .tag{
+    position:absolute; top:8px; left:8px; background:rgba(255,255,255,.94);
+    font-size:9.5px; font-weight:600; letter-spacing:.4px; padding:3px 6px; border-radius:4px;
+  }
+  .card .nm{font-size:12.5px; margin-top:9px; font-weight:500}
+  .card .pr{font-size:12px; color:var(--muted); margin-top:3px}
+
+  .foot{background:var(--stone); padding:30px 20px 220px; margin-top:10px}
+  .foot h4{font-size:13px; font-weight:600; letter-spacing:1px}
+  .foot p{font-size:12px; color:var(--muted); margin-top:7px; line-height:1.6}
+  .foot .links{display:flex; gap:18px; margin-top:20px; font-size:12px; color:var(--muted)}
+
+  /* ---------- 手指 ---------- */
+  #finger{
+    position:absolute; width:44px; height:44px; margin:-22px 0 0 -22px; border-radius:50%;
+    background:rgba(20,20,20,.16); border:1.5px solid rgba(20,20,20,.3);
+    opacity:0; z-index:40; pointer-events:none;
+  }
+  #finger.tap{animation:tap .62s ease forwards}
+  @keyframes tap{
+    0%{opacity:0; transform:scale(1.7)}
+    30%{opacity:1; transform:scale(1)}
+    55%{opacity:1; transform:scale(.78)}
+    100%{opacity:0; transform:scale(1.5)}
+  }
+
+  /* ---------- 字卡 ---------- */
+  #caption{
+    position:absolute; left:40px; right:40px; top:786px; height:132px;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:10px;
+    text-align:center;
+  }
+  #caption .kicker{
+    font-size:12px; letter-spacing:4px; color:#8b8f9a; font-weight:600; opacity:0;
+    transition:opacity .3s ease;
+  }
+  #caption .line{
+    font-size:29px; line-height:1.34; font-weight:600; letter-spacing:.6px; color:#fff;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .34s ease, transform .34s cubic-bezier(.2,.7,.3,1);
+  }
+  #caption.on .kicker{opacity:1}
+  #caption.on .line{opacity:1; transform:none}
+
+  /* ---------- 結尾卡 ---------- */
+  #endcard{
+    position:absolute; inset:0; background:#0c0d10; z-index:60;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    opacity:0; pointer-events:none; transition:opacity .5s ease;
+  }
+  #endcard.on{opacity:1}
+  #endcard .mark{font-size:26px; font-weight:700; letter-spacing:9px}
+  #endcard .big{font-size:36px; font-weight:600; letter-spacing:1px; line-height:1.35; text-align:center}
+  #endcard .rule{width:56px; height:2px; background:#3a3d45}
+  #endcard .cta2{
+    margin-top:6px; font-size:16px; letter-spacing:1px; color:#0c0d10; background:#fff;
+    padding:13px 30px; border-radius:8px; font-weight:600;
+  }
+
+  /* ---------- 畫面外的操作說明（錄影時自動隱藏） ---------- */
+  #hud{
+    position:fixed; left:20px; bottom:18px; font-size:12px; line-height:1.9; color:#767b86;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  #hud b{color:#c8ccd4; font-weight:600}
+  body.clean #hud{display:none}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="phone">
+    <div id="screen">
+      <div class="statusbar">
+        <span>9:41</span>
+        <span class="glyphs">
+          <span class="bar" style="height:6px"></span>
+          <span class="bar" style="height:8px"></span>
+          <span class="bar" style="height:10px"></span>
+          <span class="bar" style="height:12px"></span>
+          <span style="width:6px"></span>
+          <span class="batt"><i></i></span>
+        </span>
+      </div>
+
+      <div class="nav">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="1.6">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+        </svg>
+        <!-- 換成你們的品牌字樣 -->
+        <span class="wordmark">BRAND</span>
+        <span class="bag">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="1.6">
+            <path d="M4 8h16l-1.3 12.4a1 1 0 0 1-1 .9H6.3a1 1 0 0 1-1-.9L4 8Z" stroke-linejoin="round"/>
+            <path d="M8.5 8V6.2a3.5 3.5 0 0 1 7 0V8" stroke-linecap="round"/>
+          </svg>
+          <b class="count" id="bagCount">1</b>
+        </span>
+      </div>
+
+      <div id="scroller">
+        <div class="page" id="pageA"><div class="scrollbody"><div class="inner"></div></div></div>
+        <div class="page" id="pageB"><div class="scrollbody"><div class="inner"></div></div></div>
+      </div>
+
+      <div id="finger"></div>
+    </div>
+  </div>
+
+  <div id="caption">
+    <div class="kicker"></div>
+    <div class="line"></div>
+  </div>
+
+  <div id="endcard">
+    <div class="mark">BRAND</div>
+    <div class="rule"></div>
+    <div class="big">相關商品推薦<br>現已上線</div>
+    <div class="cta2">立即體驗</div>
+  </div>
+</div>
+
+<div id="hud">
+  <b>space</b> 重播　<b>c</b> 隱藏說明（錄影模式）　<b>1</b> 慢速預覽
+</div>
+
+<script>
+/* =========================================================================
+   相關商品推薦 — 手機介面演示動畫
+   composition : 540 x 960 舞台，錄成 1080 x 1920 (9:16)
+   duration    : 約 16.5 秒，自動循環
+   換成你們自己的內容：改 PRODUCT / RECS / BRAND 字樣 / SHOTS 的字卡文案
+   ========================================================================= */
+
+/* ---------- 資料（佔位符，換成真實商品） ---------- */
+const PRODUCT = {
+  eyebrow:'LOW TOP SNEAKER', name:'Capri Triple White', price:'NT$ 8,280',
+  c:['#faf8f5','#ece7de','#e3ded4']
+};
+/* 被點進去的推薦商品 —— 必須和分鏡中被點的那張卡片一致（預設是 RECS[2]） */
+const PRODUCT_B = {
+  eyebrow:'LOW TOP SNEAKER', name:'Capri Sage', price:'NT$ 8,280',
+  c:['#9caa91','#87977c','#b5c1aa']
+};
+const RECS = [
+  {name:'Capri Onyx',    price:'NT$ 8,280',  tag:'同系列',    c:['#2c2c30','#1c1c20','#3b3b41']},
+  {name:'Primo Sand',    price:'NT$ 8,980',  tag:'相似材質',  c:['#dccdb7','#cbb9a0','#e9dfce']},
+  {name:'Capri Sage',    price:'NT$ 8,280',  tag:'常一起購買',c:['#9caa91','#87977c','#b5c1aa']},
+  {name:'Primo Cognac',  price:'NT$ 9,280',  tag:'相似版型',  c:['#a56740','#8e5530','#bb8054']},
+  {name:'Milo Slate',    price:'NT$ 7,580',  tag:'你瀏覽過',  c:['#6d7380','#575e69','#838b98']},
+];
+
+/* ---------- 鞋子插圖 ---------- */
+function sneaker([upper, toe, collar]){
+  return `<svg viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="112" cy="127" rx="86" ry="5" fill="rgba(0,0,0,.08)"/>
+    <path d="M18 106h182c9 0 12 4 11 9-1 4-5 6-11 6H33c-9 0-15-5-15-11z" fill="#d9d2c5"/>
+    <path d="M18 96c0-6 5-9 14-9h172c8 0 12 4 12 10v9H18z" fill="#eae4d9"/>
+    <path d="M32 87c-3-30 12-51 42-56 14-2 24 5 34 15 12 12 28 20 48 25 22 5 34 10 34 16z" fill="${upper}"/>
+    <path d="M158 66c18 5 32 10 32 21h-32z" fill="${toe}"/>
+    <path d="M32 87c-2-24 8-42 28-52l9 13c-15 9-23 21-23 39z" fill="${collar}"/>
+    <path d="M74 39l40 34-9 8-39-33z" fill="rgba(255,255,255,.16)"/>
+    <g stroke="rgba(255,255,255,.9)" stroke-width="3.2" stroke-linecap="round">
+      <path d="M72 47l18 10"/><path d="M83 40l18 10"/><path d="M94 34l17 10"/>
+    </g>
+  </svg>`;
+}
+
+/* ---------- 版型 ---------- */
+function pdp(p, withRecs){
+  const cards = RECS.map(r => `
+    <div class="card">
+      <div class="thumb"><span class="tag">${r.tag}</span>${sneaker(r.c)}</div>
+      <div class="nm">${r.name}</div>
+      <div class="pr">${r.price}</div>
+    </div>`).join('');
+
+  return `
+    <div class="hero">${sneaker(p.c)}<div class="dots"><i></i><i></i><i></i><i></i></div></div>
+    <div class="info">
+      <div class="eyebrow">${p.eyebrow}</div>
+      <div class="title">${p.name}</div>
+      <div class="price">${p.price}</div>
+      <div class="sizes">
+        <b>39</b><b>40</b><b class="on">41</b><b>42</b><b>43</b><b>44</b>
+      </div>
+    </div>
+    <div class="cta">加入購物袋</div>
+    <div class="rows">
+      <div>材質與製作 <span>+</span></div>
+      <div>尺寸建議 <span>+</span></div>
+      <div>運送與退換 <span>+</span></div>
+    </div>
+    ${ withRecs ? `
+    <div class="recs">
+      <div class="ring"></div>
+      <div class="rechead"><h3>你可能也會喜歡</h3><span class="pill">NEW</span></div>
+      <div class="recsub">依材質、版型與你的瀏覽紀錄自動配對</div>
+      <div class="rail">${cards}</div>
+    </div>` : '<div style="height:60px"></div>' }
+    <div class="foot">
+      <h4>義大利手工製作</h4>
+      <p>每一雙由 Le Marche 的家族工坊完成，<br>採用可追溯來源的皮革。</p>
+      <div class="links"><span>客服</span><span>門市</span><span>尺寸表</span><span>永續</span></div>
+    </div>
+  `;
+}
+
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const pageA = $('#pageA'), pageB = $('#pageB');
+pageA.querySelector('.inner').innerHTML = pdp(PRODUCT, true);
+pageB.querySelector('.inner').innerHTML = pdp(PRODUCT_B, true);
+
+/* ---------- 動畫工具 ---------- */
+let speed = 1;
+const wait = ms => new Promise(r => setTimeout(r, ms / speed));
+const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+
+function tween(dur, fn){
+  return new Promise(res => {
+    const t0 = performance.now(), d = dur / speed;
+    (function step(now){
+      const k = Math.min(1, (now - t0) / d);
+      fn(ease(k));
+      k < 1 ? requestAnimationFrame(step) : res();
+    })(t0);
+  });
+}
+
+/* 垂直捲動：用 transform 移動內容，比 scrollTop 更順、錄影不掉格 */
+function scrollTo(page, to, dur){
+  const inner = page.querySelector('.inner');
+  const from = parseFloat(inner.dataset.y || 0);
+  inner.dataset.y = to;
+  return tween(dur, k => inner.style.transform = `translateY(${from + (to - from) * k}px)`);
+}
+function setScroll(page, y){
+  const inner = page.querySelector('.inner');
+  inner.dataset.y = y; inner.style.transform = `translateY(${y}px)`;
+}
+function railTo(page, to, dur){
+  const rail = page.querySelector('.rail');
+  const from = parseFloat(rail.dataset.x || 0);
+  rail.dataset.x = to;
+  return tween(dur, k => rail.style.transform = `translateX(${from + (to - from) * k}px)`);
+}
+
+function tap(x, y){
+  const f = $('#finger');
+  f.style.left = x + 'px'; f.style.top = y + 'px';
+  f.classList.remove('tap'); void f.offsetWidth; f.classList.add('tap');
+  return wait(420);
+}
+
+/* 直接對元素中心點擊——版面改了也不用重算座標 */
+function tapEl(el){
+  const s = $('#screen').getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  const k = s.width / 390;                       // 舞台縮放比
+  return tap((r.left + r.width / 2 - s.left) / k, (r.top + r.height / 2 - s.top) / k);
+}
+
+function caption(kicker, line){
+  const c = $('#caption');
+  c.classList.remove('on');
+  return wait(220).then(() => {
+    c.querySelector('.kicker').textContent = kicker;
+    c.querySelector('.line').innerHTML = line;
+    c.classList.add('on');
+  });
+}
+
+/* ---------- 分鏡 ---------- */
+async function play(){
+  /* 重設 */
+  $('#endcard').classList.remove('on');
+  pageB.classList.remove('in');
+  $('#bagCount').textContent = '1';
+  setScroll(pageA, 0); setScroll(pageB, 0);
+  pageA.querySelector('.rail').style.transform = 'translateX(0)';
+  pageA.querySelector('.rail').dataset.x = 0;
+  $$('.card').forEach(c => c.classList.remove('show','tapped'));
+  /* 第二頁的推薦卡片不需要進場動畫，直接顯示 */
+  pageB.querySelectorAll('.card').forEach(c => c.classList.add('show'));
+  $$('.recs').forEach(r => r.classList.remove('lit'));
+  $('#caption').classList.remove('on');
+
+  await wait(400);
+
+  /* 1 — 熟悉的商品頁 */
+  caption('0:00', '一樣的商品頁');
+  await wait(1900);
+
+  /* 2 — 往下滑 */
+  caption('0:02', '往下滑，看看有什麼不一樣');
+  await scrollTo(pageA, -430, 1100);
+  await wait(500);
+
+  /* 3 — 推薦區塊出現 */
+  caption('0:04', '新功能<br>相關商品推薦');
+  await scrollTo(pageA, -760, 900);
+  pageA.querySelector('.recs').classList.add('lit');
+  const cardsA = pageA.querySelectorAll('.card');
+  cardsA.forEach((c, i) => setTimeout(() => c.classList.add('show'), i * 110 / speed));
+  await wait(1800);
+
+  /* 4 — 橫向瀏覽 */
+  caption('0:06', '依材質、版型與瀏覽紀錄<br>自動配對');
+  await railTo(pageA, -320, 1300);
+  await wait(700);
+
+  /* 5 — 點擊推薦商品 → 直接跳頁 */
+  caption('0:09', '一鍵跳轉，不必回到分類頁');
+  const target = cardsA[2];
+  await tapEl(target.querySelector('.thumb'));
+  target.classList.add('tapped');
+  await wait(160);
+  target.classList.remove('tapped');
+  setScroll(pageB, 0);
+  pageB.classList.add('in');
+  await wait(1500);
+
+  /* 6 — 加入購物袋 */
+  caption('0:11', '看到喜歡的，直接加入購物袋');
+  await scrollTo(pageB, -300, 800);
+  const cta = pageB.querySelector('.cta');
+  await tapEl(cta);
+  cta.classList.add('press');
+  await wait(140);
+  cta.classList.remove('press');
+  const cnt = $('#bagCount');
+  cnt.textContent = '2'; cnt.classList.add('pop');
+  await wait(280); cnt.classList.remove('pop');
+  await wait(1400);
+
+  /* 7 — 結尾卡 */
+  $('#caption').classList.remove('on');
+  await wait(300);
+  $('#endcard').classList.add('on');
+  await wait(2600);
+  $('#endcard').classList.remove('on');
+  await wait(700);
+}
+
+let running = false;
+async function loop(){
+  if (running) return;
+  running = true;
+  /* eslint-disable no-constant-condition */
+  while (true) await play();
+}
+
+/* ---------- 舞台縮放：不論視窗多大，構圖完全一致 ---------- */
+function fit(){
+  const s = Math.min(innerWidth / 540, innerHeight / 960);
+  $('#stage').style.transform = `scale(${s})`;
+}
+addEventListener('resize', fit);
+fit();
+
+addEventListener('keydown', e => {
+  if (e.code === 'Space'){ e.preventDefault(); location.reload(); }
+  if (e.key === 'c') document.body.classList.toggle('clean');
+  if (e.key === '1'){ speed = speed === 1 ? .5 : 1; }
+});
+
+/* ?clean=1 → 隱藏說明文字，給錄影用 */
+if (new URLSearchParams(location.search).has('clean')) document.body.classList.add('clean');
+
+/* 等字體與版面就緒再開始，避免第一幀跳動 */
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(loop));
+</script>
+</body>
+</html>
