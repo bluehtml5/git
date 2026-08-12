@@ -131,7 +131,10 @@ async function recordLive(browser) {
   await ctx.close();
 }
 
-const browser = await chromium.launch();
+// CHROME_PATH：瀏覽器不在 Playwright 預設位置時指定（CI、預裝 Chromium 的容器）
+const browser = await chromium.launch(
+  process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}
+);
 try {
   MODE === 'live' ? await recordLive(browser) : await recordMock(browser);
 } finally {
